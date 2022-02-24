@@ -1,6 +1,6 @@
 ﻿
 namespace ezviz.net.exceptions;
-public class LoginException : Exception
+public class LoginException : EzvizNetException
 {
     public LoginException(string message) : base(message)
     {

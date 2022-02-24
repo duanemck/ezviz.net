@@ -1,4 +1,5 @@
 ﻿using ezviz.net.domain;
+using ezviz.net.domain.deviceInfo;
 using ezviz.net.exceptions;
 using Refit;
 using System.Security.Cryptography;
@@ -9,14 +10,7 @@ public class EzvizClient
 {
     private const string DEFAULT_REGION = "apiieu.ezvizlife.com";
     
-    private const int RESPONSE_CODE_OK = 200;
-        
-    private const int RESPONSE_CODE_INCORRECT_REGION = 1100;
-    private const int RESPONSE_CODE_INVALID_USERNAME = 1013;
-    private const int RESPONSE_CODE_INVALID_PASSWORD = 1014;
-    private const int RESPONSE_CODE_ACCOUNT_LOCKED = 1015;
-    private const int RESPONSE_CODE_MFA_ENABLED = 6002;
-    
+       
     private readonly string username;
     private readonly string password;
     private readonly string region;
@@ -25,6 +19,8 @@ public class EzvizClient
     private LoginSession? session;
     private EzvizUser? user;
     private SystemConfigInfo systemConfig;
+
+    private IEzvizApi? api;
 
     public EzvizClient(string username, string password) : this(username, password, null)
     {                
@@ -35,6 +31,7 @@ public class EzvizClient
         this.username = username;
         this.password = GetPasswordHash(password);
         this.region = region ?? DEFAULT_REGION;
+        api = RestService.For<IEzvizApi>($"https://{this.region}");
     }
 
     private string GetPasswordHash(string plaintext)
@@ -70,11 +67,12 @@ public class EzvizClient
             throw new LoginException("Error logging in", ex);
         }
 
-        if (response.Meta.Code == RESPONSE_CODE_OK)
+        if (response.Meta.Code == Meta.RESPONSE_CODE_OK)
         {
             session = response.LoginSession;
             apiDetails = response.LoginArea;
             user = response.LoginUser;
+            api = RestService.For<IEzvizApi>($"https://{apiDetails.ApiDomain}");
 
             systemConfig = await GetSystemConfig();
 
@@ -83,25 +81,30 @@ public class EzvizClient
 
         switch (response.Meta.Code)
         {
-            case RESPONSE_CODE_ACCOUNT_LOCKED: throw new AccountLockedException();
-            case RESPONSE_CODE_INVALID_USERNAME: throw new InvalidUsernameException();
-            case RESPONSE_CODE_INVALID_PASSWORD: throw new InvalidPasswordException();
-            case RESPONSE_CODE_MFA_ENABLED: throw new MFAEnabledException();
-            case RESPONSE_CODE_INCORRECT_REGION: throw new InvalidRegionException(response.LoginArea.ApiDomain);                
+            case Meta.RESPONSE_CODE_ACCOUNT_LOCKED: throw new AccountLockedException();
+            case Meta.RESPONSE_CODE_INVALID_USERNAME: throw new InvalidUsernameException();
+            case Meta.RESPONSE_CODE_INVALID_PASSWORD: throw new InvalidPasswordException();
+            case Meta.RESPONSE_CODE_MFA_ENABLED: throw new MFAEnabledException();
+            case Meta.RESPONSE_CODE_INCORRECT_REGION: throw new InvalidRegionException(response.LoginArea.ApiDomain);                
         }
         throw new LoginException($"Login failed, unknown response code [{response.Meta.Code}]");
         
     }
 
+    public async Task<IEnumerable<Device>> GetDevices()
+    {        
+        var response = await api.GetPagedList(session.SessionId,    "CLOUD, TIME_PLAN, CONNECTION, SWITCH,STATUS,"+ 
+                                                                    "WIFI, NODISTURB, KMS,P2P, TIME_PLAN," + 
+                                                                    "CHANNEL, VTM,DETECTOR, FEATURE, CUSTOM_TAG, " + 
+                                                                    "UPGRADE,VIDEO_QUALITY, QOS, PRODUCTS_INFO, FEATURE_INFO");
+        response.Meta.ThrowIfNotOk("Getting device list");
+        return response.DeviceInfos.Select(device => new Device(device, response));
+    }
+
     private async Task<SystemConfigInfo> GetSystemConfig()
     {
-        var azviewApi = RestService.For<IEzvizApi>($"https://{apiDetails.ApiDomain}");
-        var response = await azviewApi.GetServiceUrls(session.SessionId);
-
-        if (response.Meta.Code != RESPONSE_CODE_OK)
-        {
-            throw new ServiceConfigException();
-        }
+        var response = await api.GetServiceUrls(session.SessionId);
+        response.Meta.ThrowIfNotOk("Could not get API service information");
         return response.SystemConfigInfo;
     }
 

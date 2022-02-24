@@ -21,5 +21,8 @@ internal interface IEzvizApi
 
     [Get("/v3/configurations/system/info")]
     Task<ServiceUrlsResponse> GetServiceUrls([Header("sessionId")] string sessionId);
+
+    [Get("/v3/userdevices/v1/resources/pagelist")]
+    Task<PagedListResponse> GetPagedList([Header("sessionId")] string sessionId, string filter);
 }
 

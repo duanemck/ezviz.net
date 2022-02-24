@@ -9,10 +9,14 @@ internal class ServiceUrlsResponse
 {
     public SystemConfigInfo SystemConfigInfo { get; set; }
     public Meta Meta { get; set; }
+
+    
 }
 
 internal class SystemConfigInfo
 {
+    private string sysConf;
+
     public int Minute { get; set; }
     public int Second { get; set; }
     public int EnableP2P { get; set; }
@@ -29,13 +33,24 @@ internal class SystemConfigInfo
     public string PushAddr { get; set; }
     public int PushHttpPort { get; set; }
     public int PushHttpsPort { get; set; }
-    public string AuthAddr { get; set; }    
+    public string AuthAddr { get; set; }
     public string DevicePicDomain { get; set; }
     public string NodeJsAddr { get; set; }
     public int NodeJsHttpPort { get; set; }
     public int CloudExpiredTipTime { get; set; }
     public int DeviceUpgradeTipTime { get; set; }
-    public string SysConf { get; set; }
+
+
+    public ICollection<string> ServiceUrls { get; private set; }
+    public string SysConf
+    {
+        get => sysConf; set
+        {
+            sysConf = value;
+            ServiceUrls = value.Split("|");
+        }
+    }
+    
     public string NewTtsAddr { get; set; }
     public int NewTtsPort { get; set; }
     public string DclogUrl { get; set; }
@@ -48,6 +63,6 @@ internal class SystemConfigInfo
     public string EzvizEvaluationVersion { get; set; }
     public string PushDasDomain { get; set; }
     public int PushDasPort { get; set; }
-    public int Ssp { get; set; }            
+    public int Ssp { get; set; }
 }
 

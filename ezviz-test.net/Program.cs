@@ -17,4 +17,6 @@ if (username == null || password == null)
 var client = new EzvizClient(username, password);
 var result = await client.Login();
 
-Console.WriteLine(result.Username);
+var devices = (await client.GetDevices()).ToList();
+
+Console.WriteLine(devices.FirstOrDefault().DeviceInfo.Name);
