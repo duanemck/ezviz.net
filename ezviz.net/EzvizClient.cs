@@ -6,15 +6,15 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace ezviz.net;
-public class EzvizClient 
+public class EzvizClient
 {
     private const string DEFAULT_REGION = "apiieu.ezvizlife.com";
-    
-       
+    private readonly string[] SUPPORTED_DEVICE_CATEGORIES = new[] { "COMMON", "IPC", "BatteryCamera", "BDoorBell", "XVR", "CatEye" };
+
     private readonly string username;
     private readonly string password;
     private readonly string region;
-    
+
     private LoginArea? apiDetails;
     private LoginSession? session;
     private EzvizUser? user;
@@ -23,7 +23,7 @@ public class EzvizClient
     private IEzvizApi? api;
 
     public EzvizClient(string username, string password) : this(username, password, null)
-    {                
+    {
     }
 
     public EzvizClient(string username, string password, string? region)
@@ -40,10 +40,10 @@ public class EzvizClient
         {
             var bytes = Encoding.UTF8.GetBytes(plaintext);
             var hashed = md5.ComputeHash(bytes);
-            return BitConverter.ToString(hashed).Replace("-", string.Empty).ToLower();            
+            return BitConverter.ToString(hashed).Replace("-", string.Empty).ToLower();
         }
     }
-    
+
     public async Task<EzvizUser> Login()
     {
 
@@ -85,20 +85,25 @@ public class EzvizClient
             case Meta.RESPONSE_CODE_INVALID_USERNAME: throw new InvalidUsernameException();
             case Meta.RESPONSE_CODE_INVALID_PASSWORD: throw new InvalidPasswordException();
             case Meta.RESPONSE_CODE_MFA_ENABLED: throw new MFAEnabledException();
-            case Meta.RESPONSE_CODE_INCORRECT_REGION: throw new InvalidRegionException(response.LoginArea.ApiDomain);                
+            case Meta.RESPONSE_CODE_INCORRECT_REGION: throw new InvalidRegionException(response.LoginArea.ApiDomain);
         }
         throw new LoginException($"Login failed, unknown response code [{response.Meta.Code}]");
-        
+
     }
 
-    public async Task<IEnumerable<Device>> GetDevices()
-    {        
-        var response = await api.GetPagedList(session.SessionId,    "CLOUD, TIME_PLAN, CONNECTION, SWITCH,STATUS,"+ 
-                                                                    "WIFI, NODISTURB, KMS,P2P, TIME_PLAN," + 
-                                                                    "CHANNEL, VTM,DETECTOR, FEATURE, CUSTOM_TAG, " + 
+
+
+    public async Task<IEnumerable<Camera>> GetCameras()
+    {
+        var response = await api.GetPagedList(session.SessionId, "CLOUD, TIME_PLAN, CONNECTION, SWITCH,STATUS," +
+                                                                    "WIFI, NODISTURB, KMS,P2P, TIME_PLAN," +
+                                                                    "CHANNEL, VTM,DETECTOR, FEATURE, CUSTOM_TAG, " +
                                                                     "UPGRADE,VIDEO_QUALITY, QOS, PRODUCTS_INFO, FEATURE_INFO");
         response.Meta.ThrowIfNotOk("Getting device list");
-        return response.DeviceInfos.Select(device => new Device(device, response));
+        return response.DeviceInfos
+            .Select(device => new Camera(device, response))
+            .Where(device => SUPPORTED_DEVICE_CATEGORIES.Contains(device.DeviceInfo.DeviceCategory))
+            .Cast<Camera>();
     }
 
     private async Task<SystemConfigInfo> GetSystemConfig()

@@ -17,6 +17,12 @@ if (username == null || password == null)
 var client = new EzvizClient(username, password);
 var result = await client.Login();
 
-var devices = (await client.GetDevices()).ToList();
+var devices = await client.GetCameras();
 
-Console.WriteLine(devices.FirstOrDefault().DeviceInfo.Name);
+foreach (var device in devices)
+{
+    Console.WriteLine(device.LocalIp);
+}
+
+Console.ReadLine();
+
