@@ -24,13 +24,6 @@ internal class LoginTerminalStatus
     public string TerminalOpened { get; set; }
 }
 
-internal class Meta
-{
-    public int Code { get; set; }
-    public string Message { get; set; }
-    public string MoreInfo { get; set; }
-}
-
 internal class LoginArea
 {
     public string ApiDomain { get; set; }

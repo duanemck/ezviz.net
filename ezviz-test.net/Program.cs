@@ -9,6 +9,11 @@ var config = new ConfigurationBuilder()
 var username = config["username"];
 var password = config["password"];
 
+if (username == null || password == null)
+{
+    throw new ArgumentException("Please specify username and password");
+}
+
 var client = new EzvizClient(username, password);
 var result = await client.Login();
 

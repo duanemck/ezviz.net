@@ -18,5 +18,8 @@ internal interface IEzvizApi
 {
     [Post("/v3/users/login/v5")]
     Task<LoginResponse> Login([Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+
+    [Get("/v3/configurations/system/info")]
+    Task<ServiceUrlsResponse> GetServiceUrls([Header("sessionId")] string sessionId);
 }
 
