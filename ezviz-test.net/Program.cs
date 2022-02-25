@@ -1,4 +1,5 @@
 ﻿using ezviz.net;
+using ezviz.net.domain.deviceInfo;
 using Microsoft.Extensions.Configuration;
 
 var config = new ConfigurationBuilder()
@@ -21,7 +22,9 @@ var devices = await client.GetCameras();
 
 foreach (var device in devices)
 {
-    Console.WriteLine(await device.GetDetectionSensibilityAsync());
+    Console.WriteLine(device.AlarmSoundLevel);
+    await device.SetAlarmSoundLevel(AlarmSound.Intensive, true);
+    Console.WriteLine(device.AlarmSoundLevel);
 }
 
 Console.ReadLine();

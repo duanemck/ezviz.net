@@ -27,5 +27,8 @@ internal interface IEzvizApi
 
     [Post("/api/device/queryAlgorithmConfig")]
     Task<DetectionSensibilityResponse> GetDetectionSensibility([Header("sessionId")] string sessionId, [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+
+    [Put("/v3/devices/{serialNumber}/alarm/sound")]
+    Task<IApiResponse> SetAlarmSoundLevel([Header("sessionId")] string sessionId, string serialNumber, [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 }
 

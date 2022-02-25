@@ -21,6 +21,7 @@ namespace ezviz.net.domain
         public string Name => DeviceInfo.Name;
         public string DeviceType => $"{DeviceInfo.DeviceCategory} {DeviceInfo.DeviceSubCategory}";
         public string LocalIp => Wifi.Address ?? Connection.LocalIp ?? "0.0.0.0";
+        public AlarmSound AlarmSoundLevel => Status.AlarmSoundMode;
 
         public async Task<string> GetDetectionSensibilityAsync()
         {
@@ -43,6 +44,12 @@ namespace ezviz.net.domain
                 return algorithms.FirstOrDefault(alg => alg.Type == type)?.Value ?? "Unknown";
             }
 
+        }
+
+        public async Task SetAlarmSoundLevel(AlarmSound soundLevel, bool enabled)
+        {
+            await client.SetAlarmSoundLevel(SerialNumber,enabled,soundLevel);
+            Status.AlarmSoundMode = soundLevel;
         }
     }
 }

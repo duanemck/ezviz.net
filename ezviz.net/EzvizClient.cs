@@ -123,4 +123,19 @@ public class EzvizClient
         }
         return response.AlgorithmConfig.AlgorithmList;
     }
+
+    internal async Task SetAlarmSoundLevel(string serialNumber, bool enable, AlarmSound level)
+    {
+        var payload = new Dictionary<string, object>() {
+            { "enable", enable ? 1: 0 },
+            { "soundType", (int)level },
+            { "voiceId" , "0" },
+            { "deviceSerial", serialNumber }
+        };
+        var response = await api.SetAlarmSoundLevel(session.SessionId, serialNumber, payload);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new EzvizNetException($"Unable to update the sound level. [{response.StatusCode}][{response.ReasonPhrase}]", response.Error);
+        }
+    }
 }

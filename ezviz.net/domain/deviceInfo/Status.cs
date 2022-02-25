@@ -13,7 +13,7 @@ public class Status
     public int UpgradeAvailable { get; set; }
     public int UpgradeProcess { get; set; }
     public int UpgradeStatus { get; set; }
-    public int AlarmSoundMode { get; set; }
+    public AlarmSound AlarmSoundMode { get; set; }
 
     public IDictionary<string, string> Optionals { get; set; } = new Dictionary<string, string>();
 
