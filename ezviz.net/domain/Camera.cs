@@ -51,5 +51,10 @@ namespace ezviz.net.domain
             await client.SetAlarmSoundLevel(SerialNumber,enabled,soundLevel);
             Status.AlarmSoundMode = soundLevel;
         }
+
+        public async Task<ICollection<Alarm>> GetAlarms()
+        {
+            return await client.GetAlarms(SerialNumber);
+        }
     }
 }

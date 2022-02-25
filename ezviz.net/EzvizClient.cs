@@ -138,4 +138,18 @@ public class EzvizClient
             throw new EzvizNetException($"Unable to update the sound level. [{response.StatusCode}][{response.ReasonPhrase}]", response.Error);
         }
     }
+
+    internal async Task<ICollection<Alarm>> GetAlarms(string serialNumber)
+    {
+        var query = new Dictionary<string, object>() { 
+            { "deviceSerials", serialNumber }, 
+            { "queryType", -1 }, 
+            { "limit", 10 }, 
+            { "stype", -1 } 
+        };
+        var response = await api.GetAlarmInformation(session.SessionId, query);
+        response.Meta.ThrowIfNotOk("Querying alarms");
+
+        return response.Alarms;
+    }
 }

@@ -22,9 +22,12 @@ var devices = await client.GetCameras();
 
 foreach (var device in devices)
 {
-    Console.WriteLine(device.AlarmSoundLevel);
-    await device.SetAlarmSoundLevel(AlarmSound.Intensive, true);
-    Console.WriteLine(device.AlarmSoundLevel);
+    var alarms = await device.GetAlarms();
+    Console.WriteLine(device.SerialNumber);
+    foreach (var alarm in alarms)
+    {
+        Console.WriteLine(alarm.AlarmMessage);
+    }
 }
 
 Console.ReadLine();

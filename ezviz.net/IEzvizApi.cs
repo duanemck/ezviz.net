@@ -30,5 +30,8 @@ internal interface IEzvizApi
 
     [Put("/v3/devices/{serialNumber}/alarm/sound")]
     Task<IApiResponse> SetAlarmSoundLevel([Header("sessionId")] string sessionId, string serialNumber, [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+
+    [Get("/v3/alarms/v2/advanced")]
+    Task<AlarmInfoResponse> GetAlarmInformation([Header("sessionId")] string sessionId, IDictionary<string,object> query);
 }
 
