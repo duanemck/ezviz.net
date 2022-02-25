@@ -24,5 +24,8 @@ internal interface IEzvizApi
 
     [Get("/v3/userdevices/v1/resources/pagelist")]
     Task<PagedListResponse> GetPagedList([Header("sessionId")] string sessionId, string filter);
+
+    [Post("/api/device/queryAlgorithmConfig")]
+    Task<DetectionSensibilityResponse> GetDetectionSensibility([Header("sessionId")] string sessionId, [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 }
 

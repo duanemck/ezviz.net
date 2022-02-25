@@ -21,7 +21,7 @@ var devices = await client.GetCameras();
 
 foreach (var device in devices)
 {
-    Console.WriteLine(device.LocalIp);
+    Console.WriteLine(await device.GetDetectionSensibilityAsync());
 }
 
 Console.ReadLine();

@@ -101,7 +101,7 @@ public class EzvizClient
                                                                     "UPGRADE,VIDEO_QUALITY, QOS, PRODUCTS_INFO, FEATURE_INFO");
         response.Meta.ThrowIfNotOk("Getting device list");
         return response.DeviceInfos
-            .Select(device => new Camera(device, response))
+            .Select(device => new Camera(device, response, this))
             .Where(device => SUPPORTED_DEVICE_CATEGORIES.Contains(device.DeviceInfo.DeviceCategory))
             .Cast<Camera>();
     }
@@ -113,4 +113,14 @@ public class EzvizClient
         return response.SystemConfigInfo;
     }
 
+    internal async Task<ICollection<Algorithm>> GetDetectionSensibility(string serialNumber)
+    {
+        var payload = new Dictionary<string, object>() { { "subSerial", serialNumber } };
+        var response = await api.GetDetectionSensibility(session.SessionId, payload);
+        if (response.ResultCode != "0")
+        {
+            return null;
+        }
+        return response.AlgorithmConfig.AlgorithmList;
+    }
 }

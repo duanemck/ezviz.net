@@ -37,20 +37,20 @@ public class Device
 
     public EzvizDeviceInfo DeviceInfo { get; set; }
     public EzvizResourceInfo ResourceInfo { get; set; }
-    public Cloud Cloud { get; set; }
-    public VTM VTM { get; set; }
-    public ICollection<P2PEndpoint> P2P { get; set; }
-    public Connection Connection { get; set; }
-    public KMS KMS { get; set; }
-    public Status Status { get; set; }
+    protected Cloud Cloud { get; set; }
+    protected VTM VTM { get; set; }
+    protected ICollection<P2PEndpoint> P2P { get; set; }
+    protected Connection Connection { get; set; }
+    protected KMS KMS { get; set; }
+    protected Status Status { get; set; }
 
-    public ICollection<TimePlan> TimePlans { get; set; }
-    public Channel Channel { get; set; }
-    public QOS QOS { get; set; }
-    public NoDisturb NoDisturb { get; set; }
-    public Upgrade Upgrade { get; set; }
-    public ICollection<Switch> Switches { get; set; }
-    public ICollection<VideoQuality> VideoQualities { get; set; }
-    public Wifi Wifi { get; set; }
+    protected ICollection<TimePlan> TimePlans { get; set; }
+    protected Channel Channel { get; set; }
+    protected QOS QOS { get; set; }
+    protected NoDisturb NoDisturb { get; set; }
+    protected Upgrade Upgrade { get; set; }
+    protected ICollection<Switch> Switches { get; set; }
+    protected ICollection<VideoQuality> VideoQualities { get; set; }
+    protected Wifi Wifi { get; set; }
 }
 
