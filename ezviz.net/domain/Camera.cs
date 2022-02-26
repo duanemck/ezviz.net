@@ -56,6 +56,11 @@ namespace ezviz.net.domain
             return await client.GetAlarms(SerialNumber);
         }
 
+        public async Task ToggleSwitch(SwitchType type, bool enabled)
+        {
+            await client.ChangeSwitch(SerialNumber, type, enabled);
+        }
+
         public async Task ToggleAudio(bool enabled)
         {
             await client.ChangeSwitch(SerialNumber, SwitchType.SOUND, enabled);
