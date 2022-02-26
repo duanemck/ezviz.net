@@ -10,7 +10,6 @@ namespace ezviz.net.domain
     public class Camera : Device
     {
         private readonly EzvizClient client;
-        private readonly LoginSession session;
 
         internal Camera(EzvizDeviceInfo deviceInfo, PagedListResponse response, EzvizClient client) : base(deviceInfo, response)
         {
@@ -55,6 +54,36 @@ namespace ezviz.net.domain
         public async Task<ICollection<Alarm>> GetAlarms()
         {
             return await client.GetAlarms(SerialNumber);
+        }
+
+        public async Task ToggleAudio(bool enabled)
+        {
+            await client.ChangeSwitch(SerialNumber, SwitchType.SOUND, enabled);
+        }
+
+        public async Task ToggleLed(bool enabled)
+        {
+            await client.ChangeSwitch(SerialNumber, SwitchType.LIGHT, enabled);
+        }
+
+        public async Task ToggleInfrared(bool enabled)
+        {
+            await client.ChangeSwitch(SerialNumber, SwitchType.INFRARED_LIGHT, enabled);
+        }
+
+        public async Task TogglePrivacyMode(bool enabled)
+        {
+            await client.ChangeSwitch(SerialNumber, SwitchType.PRIVACY, enabled);
+        }
+
+        public async Task ToggleSleepMode(bool enabled)
+        {
+            await client.ChangeSwitch(SerialNumber, SwitchType.SLEEP, enabled);
+        }
+
+        public async Task ToggleMobileTracking(bool enabled)
+        {
+            await client.ChangeSwitch(SerialNumber, SwitchType.MOBILE_TRACKING, enabled);
         }
     }
 }

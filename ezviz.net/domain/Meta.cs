@@ -17,6 +17,10 @@ internal class Meta
 
     public void ThrowIfNotOk(string message) 
     {
+        if (Code == 2003)
+        {
+            throw new EzvizNetException($"Device is offline, could not update");
+        }
         if (Code != RESPONSE_CODE_OK)
         {
             throw new EzvizNetException($"Something went wrong connecting to the Ezviz Api [{message}]");

@@ -1,5 +1,6 @@
 ﻿
 using ezviz.net.domain;
+using ezviz.net.domain.deviceInfo;
 using Refit;
 
 namespace ezviz.net;
@@ -26,12 +27,19 @@ internal interface IEzvizApi
     Task<PagedListResponse> GetPagedList([Header("sessionId")] string sessionId, string filter);
 
     [Post("/api/device/queryAlgorithmConfig")]
-    Task<DetectionSensibilityResponse> GetDetectionSensibility([Header("sessionId")] string sessionId, [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+    Task<DetectionSensibilityResponse> GetDetectionSensibility([Header("sessionId")] string sessionId, 
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
     [Put("/v3/devices/{serialNumber}/alarm/sound")]
-    Task<IApiResponse> SetAlarmSoundLevel([Header("sessionId")] string sessionId, string serialNumber, [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+    Task<IApiResponse> SetAlarmSoundLevel([Header("sessionId")] string sessionId, string serialNumber, 
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
     [Get("/v3/alarms/v2/advanced")]
     Task<AlarmInfoResponse> GetAlarmInformation([Header("sessionId")] string sessionId, IDictionary<string,object> query);
+
+
+    [Put("/v3/devices/{serialNumber}/1/1/{switchType}/switchStatus")]
+    Task<GenericResponse> ChangeSwitch([Header("sessionId")] string sessionId, string serialNumber,
+        SwitchType switchType, [Body(BodySerializationMethod.UrlEncoded)] IDictionary<string, object> body);
 }
 

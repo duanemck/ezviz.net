@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 namespace ezviz.net.domain;
 
-internal class LoginResponse
+internal class LoginResponse : GenericResponse
 {
     public bool Isolate { get; set; }
     public LoginTerminalStatus LoginTerminalStatus { get; set; }
     public EzvizUser LoginUser { get; set; }
     public bool HcGvIsolate { get; set; }
     public string TelephoneCode { get; set; }
-    public Meta Meta { get; set; }
     public LoginArea LoginArea { get; set; }
     public LoginSession LoginSession { get; set; }
 }

@@ -152,4 +152,17 @@ public class EzvizClient
 
         return response.Alarms;
     }
+
+    internal async Task ChangeSwitch(string serialNumber,SwitchType @switch, bool enable)
+    {
+        var payload = new Dictionary<string, object>() {
+            { "enable", enable ? 1: 0 },
+            { "serial", serialNumber },
+            { "channelNo" , "1" },
+            { "type", (int)@switch }
+            
+        };
+        var response = await api.ChangeSwitch(session.SessionId, serialNumber, @switch, payload);
+        response.Meta.ThrowIfNotOk($"Changing switch {@switch} to {enable}");
+    }
 }

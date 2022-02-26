@@ -20,14 +20,15 @@ var result = await client.Login();
 
 var devices = await client.GetCameras();
 
-foreach (var device in devices)
+var device = devices.First(d => d.SerialNumber == "");
+//await device.ToggleAudio(true);
+
+var switches = device.Switches;
+
+
+foreach (var @switch in switches)
 {
-    var alarms = await device.GetAlarms();
-    Console.WriteLine(device.SerialNumber);
-    foreach (var alarm in alarms)
-    {
-        Console.WriteLine(alarm.AlarmMessage);
-    }
+    Console.WriteLine($"{@switch.Type} ==> {@switch.Enable}");
 }
 
 Console.ReadLine();

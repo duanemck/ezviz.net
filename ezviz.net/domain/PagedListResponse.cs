@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace ezviz.net.domain
 {
-    internal class PagedListResponse
-    {
-        public Meta Meta { get; set; }
+    internal class PagedListResponse : GenericResponse
+    { 
 
         public Dictionary<string, JsonElement> Cloud { get; set; }
         public Dictionary<string, JsonElement> VTM { get; set; }

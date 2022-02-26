@@ -5,12 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ezviz.net.domain;
-internal class ServiceUrlsResponse
+internal class ServiceUrlsResponse : GenericResponse
 {
     public SystemConfigInfo SystemConfigInfo { get; set; }
-    public Meta Meta { get; set; }
-
-    
+   
 }
 
 internal class SystemConfigInfo

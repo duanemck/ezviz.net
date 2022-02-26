@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace ezviz.net.domain;
 
-internal class AlarmInfoResponse
+internal class AlarmInfoResponse : GenericResponse
 {
-    public Meta Meta { get; set; }
     public PageInfo Page { get; set; }
     public ICollection<Alarm> Alarms { get; set; }
 }

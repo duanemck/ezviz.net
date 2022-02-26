@@ -49,7 +49,7 @@ public class Device
     protected QOS QOS { get; set; }
     protected NoDisturb NoDisturb { get; set; }
     protected Upgrade Upgrade { get; set; }
-    protected ICollection<Switch> Switches { get; set; }
+    public ICollection<Switch> Switches { get; set; }
     protected ICollection<VideoQuality> VideoQualities { get; set; }
     protected Wifi Wifi { get; set; }
 }
