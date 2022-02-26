@@ -1,6 +1,7 @@
 ﻿using ezviz.net;
 using ezviz.net.domain.deviceInfo;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 var config = new ConfigurationBuilder()
     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -21,15 +22,11 @@ var result = await client.Login();
 var devices = await client.GetCameras();
 
 var device = devices.First(d => d.SerialNumber == "");
-//await device.ToggleAudio(true);
-
-var switches = device.Switches;
-
-
-foreach (var @switch in switches)
+Console.WriteLine(JsonSerializer.Serialize(device, new JsonSerializerOptions()
 {
-    Console.WriteLine($"{@switch.Type} ==> {@switch.Enable}");
-}
+    WriteIndented = true,
+}));
+
 
 Console.ReadLine();
 

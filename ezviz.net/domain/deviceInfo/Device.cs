@@ -37,6 +37,10 @@ public class Device
 
     public EzvizDeviceInfo DeviceInfo { get; set; }
     public EzvizResourceInfo ResourceInfo { get; set; }
+    public ICollection<Switch> Switches { get; set; }
+    public Wifi Wifi { get; set; }
+
+
     protected Cloud Cloud { get; set; }
     protected VTM VTM { get; set; }
     protected ICollection<P2PEndpoint> P2P { get; set; }
@@ -49,8 +53,8 @@ public class Device
     protected QOS QOS { get; set; }
     protected NoDisturb NoDisturb { get; set; }
     protected Upgrade Upgrade { get; set; }
-    public ICollection<Switch> Switches { get; set; }
+
     protected ICollection<VideoQuality> VideoQualities { get; set; }
-    protected Wifi Wifi { get; set; }
+    
 }
 

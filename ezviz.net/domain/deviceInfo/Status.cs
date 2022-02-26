@@ -6,7 +6,7 @@ public class Status
 {
     public int DiskNum { get; set; }
     public string DiskState { get; set; }
-    public int GlobalState { get; set; }
+    public int GlobalStatus { get; set; }
     public int PirStatus { get; set; }
     public int IsEncrypt { get; set; }
     public string EncryptPwd { get; set; }
