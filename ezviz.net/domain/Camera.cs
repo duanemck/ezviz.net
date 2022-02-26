@@ -54,9 +54,10 @@ namespace ezviz.net.domain
             {
                 return null;
             }
+            var format = "yyyy-MM-dd HH:mm:ss";
             var lastAlarmTime = DateTime.ParseExact(
-                lastAlarm.AlarmStartTimeStr.Replace("Today",$"{ today:YYYY-MM-DD HH:mm:ss}"), 
-                "YYYY-MM-DD HH:mm:ss", CultureInfo.InvariantCulture);
+                lastAlarm.AlarmStartTimeStr.Replace("Today", today.ToString(format)), 
+                format, CultureInfo.InvariantCulture);
 
             var timePassedInSeconds = (int)((DateTime.Now - lastAlarmTime).TotalSeconds);
 
