@@ -1,5 +1,6 @@
 ﻿namespace ezviz.net.domain.deviceInfo;
 
+using ezviz.net.exceptions;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
@@ -36,31 +37,38 @@ public class Device
         Wifi = Deserialize<Wifi>(response.Wifi[serial]);
     }
 
-    private T? Deserialize<T>(JsonElement json)
+    private T Deserialize<T>(JsonElement json)
     {
-        return json.Deserialize<T>(deserializationOptions);
+#pragma warning disable IL2026
+        var result = json.Deserialize<T>( deserializationOptions);
+#pragma warning restore IL2026
+        if (result == null)
+        {
+            throw new EzvizNetException("Could not deserialize response");
+        }
+        return result;
     }
 
-    public EzvizDeviceInfo? DeviceInfo { get; set; }
-    public EzvizResourceInfo? ResourceInfo { get; set; }
-    internal ICollection<Switch>? Switches { get; set; }
-    public Wifi? Wifi { get; set; }
+    public EzvizDeviceInfo DeviceInfo { get; set; } = null!;
+    public EzvizResourceInfo ResourceInfo { get; set; } = null!;
+    internal ICollection<Switch> Switches { get; set; } = null!;
+    public Wifi Wifi { get; set; } = null!;
 
 
-    protected Cloud? Cloud { get; set; }
-    protected VTM? VTM { get; set; }
-    protected ICollection<P2PEndpoint>? P2P { get; set; }
-    protected Connection? Connection { get; set; }
-    protected KMS? KMS { get; set; }
-    protected Status? Status { get; set; }
+    protected Cloud Cloud { get; set; } = null!;
+    protected VTM VTM { get; set; } = null!;
+    protected ICollection<P2PEndpoint> P2P { get; set; } = null!;
+    protected Connection Connection { get; set; } = null!;
+    protected KMS KMS { get; set; } = null!;
+    protected Status Status { get; set; } = null!;
 
-    protected ICollection<TimePlan>? TimePlans { get; set; }
-    protected Channel? Channel { get; set; }
-    protected QOS? QOS { get; set; }
-    protected NoDisturb? NoDisturb { get; set; }
-    protected Upgrade? Upgrade { get; set; }
+    protected ICollection<TimePlan>? TimePlans { get; set; } = null!;
+    protected Channel Channel { get; set; } = null!;
+    protected QOS QOS { get; set; } = null!;
+    protected NoDisturb NoDisturb { get; set; } = null!;
+    protected Upgrade Upgrade { get; set; } = null!;
 
-    protected ICollection<VideoQuality>? VideoQualities { get; set; }
+    protected ICollection<VideoQuality> VideoQualities { get; set; } = null!;
 
 }
 

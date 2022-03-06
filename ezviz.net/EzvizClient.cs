@@ -20,7 +20,7 @@ public class EzvizClient
     private EzvizUser? user;
     private SystemConfigInfo systemConfig = null!;
 
-    private IEzvizApi? api;
+    private IEzvizApi api;
 
     public EzvizClient(string username, string password) : this(username, password, null)
     {
@@ -41,6 +41,18 @@ public class EzvizClient
             var bytes = Encoding.UTF8.GetBytes(plaintext);
             var hashed = md5.ComputeHash(bytes);
             return BitConverter.ToString(hashed).Replace("-", string.Empty).ToLower();
+        }
+    }
+
+    private string CurrentSessionId
+    {
+        get
+        {
+            if (session == null)
+            {
+                throw new EzvizNetException("Not logged in to Ezviz API");
+            }
+            return session.SessionId;
         }
     }
 
@@ -95,7 +107,7 @@ public class EzvizClient
 
     public async Task<IEnumerable<Camera>> GetCameras()
     {
-        var response = await api.GetPagedList(session.SessionId, "CLOUD, TIME_PLAN, CONNECTION, SWITCH,STATUS," +
+        var response = await api.GetPagedList(CurrentSessionId, "CLOUD, TIME_PLAN, CONNECTION, SWITCH,STATUS," +
                                                                     "WIFI, NODISTURB, KMS,P2P, TIME_PLAN," +
                                                                     "CHANNEL, VTM,DETECTOR, FEATURE, CUSTOM_TAG, " +
                                                                     "UPGRADE,VIDEO_QUALITY, QOS, PRODUCTS_INFO, FEATURE_INFO");
@@ -108,15 +120,19 @@ public class EzvizClient
 
     private async Task<SystemConfigInfo> GetSystemConfig()
     {
-        var response = await api.GetServiceUrls(session.SessionId);
+        var response = await api.GetServiceUrls(CurrentSessionId);
         response.Meta.ThrowIfNotOk("Could not get API service information");
         return response.SystemConfigInfo;
     }
 
-    internal async Task<ICollection<Algorithm>> GetDetectionSensibility(string serialNumber)
+    internal async Task<ICollection<Algorithm>?> GetDetectionSensibility(string? serialNumber)
     {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
         var payload = new Dictionary<string, object>() { { "subSerial", serialNumber } };
-        var response = await api.GetDetectionSensibility(session.SessionId, payload);
+        var response = await api.GetDetectionSensibility(CurrentSessionId, payload);
         if (response.ResultCode != "0")
         {
             return null;
@@ -124,37 +140,49 @@ public class EzvizClient
         return response.AlgorithmConfig.AlgorithmList;
     }
 
-    internal async Task SetAlarmSoundLevel(string serialNumber, bool enable, AlarmSound level)
+    internal async Task SetAlarmSoundLevel(string? serialNumber, bool enable, AlarmSound level)
     {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
         var payload = new Dictionary<string, object>() {
             { "enable", enable ? 1: 0 },
             { "soundType", (int)level },
             { "voiceId" , "0" },
             { "deviceSerial", serialNumber }
         };
-        var response = await api.SetAlarmSoundLevel(session.SessionId, serialNumber, payload);
+        var response = await api.SetAlarmSoundLevel(CurrentSessionId, serialNumber, payload);
         if (!response.IsSuccessStatusCode)
         {
             throw new EzvizNetException($"Unable to update the sound level. [{response.StatusCode}][{response.ReasonPhrase}]", response.Error);
         }
     }
 
-    internal async Task<ICollection<Alarm>> GetAlarms(string serialNumber)
+    internal async Task<ICollection<Alarm>> GetAlarms(string? serialNumber)
     {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
         var query = new Dictionary<string, object>() { 
             { "deviceSerials", serialNumber }, 
             { "queryType", -1 }, 
             { "limit", 10 }, 
             { "stype", -1 } 
         };
-        var response = await api.GetAlarmInformation(session.SessionId, query);
+        var response = await api.GetAlarmInformation(CurrentSessionId, query);
         response.Meta.ThrowIfNotOk("Querying alarms");
 
         return response.Alarms;
     }
 
-    internal async Task ChangeSwitch(string serialNumber,SwitchType @switch, bool enable)
+    internal async Task ChangeSwitch(string? serialNumber,SwitchType @switch, bool enable)
     {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
         var payload = new Dictionary<string, object>() {
             { "enable", enable ? 1: 0 },
             { "serial", serialNumber },
@@ -162,7 +190,7 @@ public class EzvizClient
             { "type", (int)@switch }
             
         };
-        var response = await api.ChangeSwitch(session.SessionId, serialNumber, @switch, payload);
+        var response = await api.ChangeSwitch(CurrentSessionId, serialNumber, @switch, payload);
         response.Meta.ThrowIfNotOk($"Changing switch {@switch} to {enable}");
     }
 }

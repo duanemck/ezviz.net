@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
@@ -6,7 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>dotnet-ezviz_systemd.net-969F3044-D6BB-4331-B4F2-A420B6AFE1E7</UserSecretsId>
 		<RootNamespace>ezviz_systemd.net</RootNamespace>
-		<PublishTrimmed>false</PublishTrimmed>
+		<PublishTrimmed>true</PublishTrimmed>
 		<TrimMode>Link</TrimMode>
 	</PropertyGroup>
 

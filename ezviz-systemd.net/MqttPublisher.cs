@@ -58,11 +58,20 @@ namespace ezviz_systemd.net
             await ezvizClient.Login();
         }
 
-        private void SendMqtt(string topicKey, string serial, object data, bool jsonSerialize = true)
+        private void SendMqtt(string topicKey, string? serial, object data, bool jsonSerialize = true)
         {
+            if (serial == null)
+            {
+                throw new ArgumentNullException(nameof(serial));
+            }
             var topic = mqttConfig.Topics[topicKey].Replace("{serial}", serial);
+#pragma warning disable IL2026
             var dataString = jsonSerialize ? JsonSerializer.Serialize(data, jsonSerializationOptions) : data.ToString();
-            mqttClient.Publish(topic, Encoding.UTF8.GetBytes(dataString));
+#pragma warning restore IL2026
+            if (dataString != null)
+            {
+                mqttClient.Publish(topic, Encoding.UTF8.GetBytes(dataString));
+            }
         }
 
 

@@ -17,44 +17,42 @@ namespace ezviz.net.domain
             this.client = client;
         }
 
-        public string SerialNumber => DeviceInfo.DeviceSerial;
-        public string Name => DeviceInfo.Name;
-        public string DeviceType => $"{DeviceInfo.DeviceCategory} {DeviceInfo.DeviceSubCategory}";
-        public string LocalIp => Wifi.Address ?? Connection.LocalIp ?? "0.0.0.0";
-        public AlarmSound AlarmSoundLevel => Status.AlarmSoundMode;
-        public bool AlarmScheduleEnabled => TimePlans.Any(tp => tp.Type == 2 && tp.Enable == 1);
+        public string? SerialNumber => DeviceInfo?.DeviceSerial;
+        public string? Name => DeviceInfo?.Name;
+        public string? DeviceType => $"{DeviceInfo?.DeviceCategory} {DeviceInfo?.DeviceSubCategory}";
+        public string? LocalIp => Wifi?.Address ?? Connection?.LocalIp ?? "0.0.0.0";
+        public AlarmSound? AlarmSoundLevel => Status?.AlarmSoundMode;
+        public bool AlarmScheduleEnabled => TimePlans?.Any(tp => tp.Type == 2 && tp.Enable == 1) ?? false;
 
-        public bool UpgradeAvailable => Upgrade.IsNeedUpgrade == 1;
-        public bool UpgradeInProgress => Status.UpgradeStatus == 0;
-        public decimal UpgradePercent => Status.UpgradeProcess;
-        public bool Sleeping => Switches
+        public bool UpgradeAvailable => Upgrade?.IsNeedUpgrade == 1;
+        public bool UpgradeInProgress => Status?.UpgradeStatus == 0;
+        public decimal UpgradePercent => Status?.UpgradeProcess ?? 0M;
+        public bool Sleeping => Switches?
             .Where(sw => sw.Type == SwitchType.SLEEP || sw.Type == SwitchType.AUTO_SLEEP)
-            .Any(sw => sw.Enable);
-        public bool PrivacyModeEnabled => Switches.Any(sw => sw.Type == SwitchType.PRIVACY && sw.Enable);
-        public bool AudioEnabled => Switches.Any(sw => sw.Type == SwitchType.SOUND && sw.Enable);
-        public bool InfraredEnabled => Switches.Any(sw => sw.Type == SwitchType.INFRARED_LIGHT && sw.Enable);
-        public bool StateLedEnabled => Switches.Any(sw => sw.Type == SwitchType.LIGHT && sw.Enable);
+            .Any(sw => sw.Enable) ?? false;
+        public bool PrivacyModeEnabled => Switches?.Any(sw => sw.Type == SwitchType.PRIVACY && sw.Enable) ?? false;
+        public bool AudioEnabled => Switches?.Any(sw => sw.Type == SwitchType.SOUND && sw.Enable) ?? false;
+        public bool InfraredEnabled => Switches?.Any(sw => sw.Type == SwitchType.INFRARED_LIGHT && sw.Enable) ?? false;
+        public bool StateLedEnabled => Switches?.Any(sw => sw.Type == SwitchType.LIGHT && sw.Enable) ?? false;
 
-        public bool MobileTrackingEnabled => Switches.Any(sw => sw.Type == SwitchType.MOBILE_TRACKING && sw.Enable);
-        public bool AlarmNotify => Status.GlobalStatus == 1;
-        public bool NotifyOffline => DeviceInfo.OfflineNotify == 1;
-        public AlarmSound AlarmSoundMode => Status.AlarmSoundMode;
-        public bool IsEncrypted => Status.IsEncrypt == 1;
-        public string WANIp => Connection.NetIp;
-        public string MacAddress => DeviceInfo.Mac;
-        public int LocalRtspPort => Connection.LocalRtspPort;
-        public int SupportedChannels => DeviceInfo.ChannelNumber;
-        public int BatteryLevel => Status.Optionals.ContainsKey("powerRemaining") ? int.Parse(Status.Optionals["powerRemaining"]) : 0;
-        public int PirStatus => Status.PirStatus;
+        public bool MobileTrackingEnabled => Switches?.Any(sw => sw.Type == SwitchType.MOBILE_TRACKING && sw.Enable) ?? false;
+        public bool AlarmNotify => Status?.GlobalStatus == 1;
+        public bool NotifyOffline => DeviceInfo?.OfflineNotify == 1;
+        public AlarmSound? AlarmSoundMode => Status?.AlarmSoundMode;
+        public bool IsEncrypted => Status?.IsEncrypt == 1;
+        public string? WANIp => Connection?.NetIp;
+        public string? MacAddress => DeviceInfo?.Mac;
+        public int? LocalRtspPort => Connection?.LocalRtspPort;
+        public int? SupportedChannels => DeviceInfo?.ChannelNumber;
+        public int? BatteryLevel => (Status != null && Status.Optionals.ContainsKey("powerRemaining")) ? int.Parse(Status.Optionals["powerRemaining"]) : 0;
+        public int PirStatus => Status?.PirStatus ?? 0;
 
-        public bool? Online => Status.Optionals.ContainsKey("OnlineStatus") ? Status.Optionals["OnlineStatus"] == "1" : null;
-        public decimal? DiskCapacityMB => Status.Optionals.ContainsKey("diskCapacity")
+        public bool? Online => Status != null && Status.Optionals.ContainsKey("OnlineStatus") ? Status.Optionals["OnlineStatus"] == "1" : null;
+        public decimal DiskCapacityMB => Status != null && Status.Optionals.ContainsKey("diskCapacity")
             ? decimal.Parse(Status.Optionals["diskCapacity"].Split(",").First())
-            : null;
+            : 0M;
 
-        public decimal? DiskCapacityGB => DiskCapacityMB == null
-            ? null
-            : DiskCapacityMB.Value / 1024;
+        public decimal DiskCapacityGB => DiskCapacityMB / 1024;
 
         public async Task<MotionAlarm?> GetLastAlarm()
         {
@@ -86,8 +84,7 @@ namespace ezviz.net.domain
 
         public async Task<string> GetDetectionSensibilityAsync()
         {
-
-            if (Switches.FirstOrDefault(s => s.Type == SwitchType.AUTO_SLEEP)?.Enable ?? false)
+            if (Switches?.FirstOrDefault(s => s.Type == SwitchType.AUTO_SLEEP)?.Enable ?? false)
             {
                 return "Hibernate";
             }
@@ -98,7 +95,7 @@ namespace ezviz.net.domain
                 {
                     return "Unknown";
                 }
-                var type = (DeviceInfo.DeviceCategory == DeviceCategories.BATTERY_CAMERA_DEVICE_CATEGORY)
+                var type = (DeviceInfo?.DeviceCategory == DeviceCategories.BATTERY_CAMERA_DEVICE_CATEGORY)
                     ? "3"
                     : "0";
 
@@ -110,6 +107,7 @@ namespace ezviz.net.domain
         public async Task SetAlarmSoundLevel(AlarmSound soundLevel, bool enabled)
         {
             await client.SetAlarmSoundLevel(SerialNumber, enabled, soundLevel);
+            
             Status.AlarmSoundMode = soundLevel;
         }
 

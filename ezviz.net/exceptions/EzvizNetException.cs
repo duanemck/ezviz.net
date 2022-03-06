@@ -13,7 +13,7 @@ namespace ezviz.net.exceptions
 
         }
 
-        public EzvizNetException(string message, Exception inner) : base(message, inner)
+        public EzvizNetException(string message, Exception? inner) : base(message, inner)
         {
 
         }
