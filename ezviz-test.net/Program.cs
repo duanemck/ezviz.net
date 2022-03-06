@@ -21,11 +21,15 @@ var result = await client.Login();
 
 var devices = await client.GetCameras();
 
-var device = devices.First(d => d.SerialNumber == "");
-Console.WriteLine(JsonSerializer.Serialize(device, new JsonSerializerOptions()
+var device = devices.First(d => d.SerialNumber == "G06307980");
+
+var options = new JsonSerializerOptions()
 {
     WriteIndented = true,
-}));
+};
+Console.WriteLine(JsonSerializer.Serialize(device, options));
+Console.WriteLine(JsonSerializer.Serialize( await device.GetLastAlarm(), options));
+
 
 
 Console.ReadLine();

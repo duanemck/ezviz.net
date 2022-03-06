@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ public class Alarm
     public string StartTime { get; set; }
     public int AlarmType { get; set; }
     public long AlarmStartTime { get; set; }
+    public DateTime AlarmStartTimeParsed => DateTime.ParseExact(AlarmStartTimeStr, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
     public string AlarmStartTimeStr { get; set; }
     public string Checksum { get; set; }
     public int IsCheck { get; set; }

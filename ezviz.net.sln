@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz-test.net", "ezviz-tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz.net", "ezviz.net\ezviz.net.csproj", "{7A1E0999-6F3D-44B4-9C5E-092FCC922159}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ezviz-systemd.net", "ezviz-systemd.net\ezviz-systemd.net.csproj", "{5469945E-D921-4BA9-9883-A7144D50708E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{7A1E0999-6F3D-44B4-9C5E-092FCC922159}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A1E0999-6F3D-44B4-9C5E-092FCC922159}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A1E0999-6F3D-44B4-9C5E-092FCC922159}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5469945E-D921-4BA9-9883-A7144D50708E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5469945E-D921-4BA9-9883-A7144D50708E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5469945E-D921-4BA9-9883-A7144D50708E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5469945E-D921-4BA9-9883-A7144D50708E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

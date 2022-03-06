@@ -37,6 +37,7 @@ namespace ezviz.net.domain
 
         public bool MobileTrackingEnabled => Switches.Any(sw => sw.Type == SwitchType.MOBILE_TRACKING && sw.Enable);
         public bool AlarmNotify => Status.GlobalStatus == 1;
+        public bool NotifyOffline => DeviceInfo.OfflineNotify == 1;
         public AlarmSound AlarmSoundMode => Status.AlarmSoundMode;
         public bool IsEncrypted => Status.IsEncrypt == 1;
         public string WANIp => Connection.NetIp;
@@ -45,6 +46,16 @@ namespace ezviz.net.domain
         public int SupportedChannels => DeviceInfo.ChannelNumber;
         public int BatteryLevel => Status.Optionals.ContainsKey("powerRemaining") ? int.Parse(Status.Optionals["powerRemaining"]) : 0;
         public int PirStatus => Status.PirStatus;
+
+        public bool? Online => Status.Optionals.ContainsKey("OnlineStatus") ? Status.Optionals["OnlineStatus"] == "1" : null;
+        public decimal? DiskCapacityMB => Status.Optionals.ContainsKey("diskCapacity")
+            ? decimal.Parse(Status.Optionals["diskCapacity"].Split(",").First())
+            : null;
+
+        public decimal? DiskCapacityGB => DiskCapacityMB == null
+            ? null
+            : DiskCapacityMB.Value / 1024;
+
         public async Task<MotionAlarm?> GetLastAlarm()
         {
             var alarms = await GetAlarms();

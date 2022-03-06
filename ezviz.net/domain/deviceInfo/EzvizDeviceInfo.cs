@@ -1,4 +1,6 @@
-﻿namespace ezviz.net.domain.deviceInfo;
+﻿using System.Text.Json.Serialization;
+
+namespace ezviz.net.domain.deviceInfo;
 
 public class EzvizDeviceInfo
 {
@@ -8,6 +10,7 @@ public class EzvizDeviceInfo
     public string DeviceType { get; set; }
     public string DevicePicPrefix { get; set; }
     public string Version { get; set; }
+    [JsonIgnore]
     public string SupportExt { get; set; }
     public int Status { get; set; }
     public string UserDeviceCreateTime { get; set; }
@@ -15,6 +18,7 @@ public class EzvizDeviceInfo
     public bool Hik { get; set; }
     public string DeviceCategory { get; set; }
     public string DeviceSubCategory { get; set; }
+    [JsonIgnore]
     public string EzDeviceCapability { get; set; }
     public string CustomType { get; set; }
     public string OfflineTime { get; set; }
