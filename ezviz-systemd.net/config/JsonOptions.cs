@@ -16,8 +16,8 @@ namespace ezviz_systemd.net.config
     public class JsonOptions
     {
         public BooleanSerializationTypes SerializeBooleans { get; set; }
-        public string SerializeTrueAs { get; set; }        
-        public string SerializeFalseAs { get; set; }
+        public string SerializeTrueAs { get; set; } = null!;     
+        public string SerializeFalseAs { get; set; } = null!;
 
     }
 }

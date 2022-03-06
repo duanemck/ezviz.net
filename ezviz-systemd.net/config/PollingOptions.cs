@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ezviz_systemd.net.config
 {
-    public class EzvizOptions
+    public class PollingOptions
     {
-        public string Username { get; set; } = null!;
-        public string Password { get; set; } = null!;
+        public int Cameras { get; set; }
+        public int Alarms { get; set; }
     }
 }

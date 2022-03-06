@@ -1,4 +1,5 @@
 ﻿using ezviz.net;
+using ezviz.net.domain;
 using ezviz_systemd.net.config;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -14,12 +15,23 @@ namespace ezviz_systemd.net
         private readonly EzvizOptions ezvizConfig;
         private readonly MqttOptions mqttConfig;
         private readonly JsonOptions jsonConfig;
+        private readonly PollingOptions pollingConfig;
 
         private readonly EzvizClient ezvizClient;
         private readonly MqttClient mqttClient;
         private readonly JsonSerializerOptions jsonSerializationOptions;
 
-        public MqttPublisher(ILogger<MqttPublisher> logger, IOptions<EzvizOptions> ezvizOptions, IOptions<MqttOptions> mqttOptions, IOptions<JsonOptions> jsonOptions)
+        private DateTime LastFullPoll = default(DateTime);
+        private DateTime LastAlarmPoll = default(DateTime);
+
+        private IEnumerable<Camera> cameras = new List<Camera>();
+
+        public MqttPublisher(
+            ILogger<MqttPublisher> logger,
+            IOptions<EzvizOptions> ezvizOptions,
+            IOptions<MqttOptions> mqttOptions,
+            IOptions<JsonOptions> jsonOptions,
+            IOptions<PollingOptions> pollingOptions)
         {
             this.logger = logger;
             ezvizConfig = ezvizOptions.Value;
@@ -27,7 +39,7 @@ namespace ezviz_systemd.net
             jsonConfig = jsonOptions.Value;
             ezvizClient = new EzvizClient(ezvizConfig.Username, ezvizConfig.Password);
             mqttClient = new MqttClient(mqttConfig.Host);
-
+            pollingConfig = pollingOptions.Value;
 
             jsonSerializationOptions = new JsonSerializerOptions()
             {
@@ -53,30 +65,56 @@ namespace ezviz_systemd.net
             mqttClient.Publish(topic, Encoding.UTF8.GetBytes(dataString));
         }
 
+
         public async Task PublishAsync()
         {
             try
             {
-                logger.LogInformation("Polling ezviz API");
-                
-                var cameras = await ezvizClient.GetCameras();
-                foreach (var camera in cameras)
+                var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
+                if (timeSinceLastFullPoll.TotalSeconds >= pollingConfig.Cameras)
                 {
-                    SendMqtt("status", camera.SerialNumber, camera);
-                    SendMqtt("lwt", camera.SerialNumber, (camera.Online ?? false) ? "ON" : "OFF", false);
-                    
-                    var alarms = (await camera.GetAlarms()).Where(a => (DateTime.Now - a.AlarmStartTimeParsed).TotalSeconds <= 300);
-                    if (alarms.Any())
-                    {
-                        SendMqtt("alarm", camera.SerialNumber, alarms);                        
-                    }
+                    await PollCameras();
+                    LastFullPoll = DateTime.Now;
                 }
-                logger.LogInformation("Polling done, published details of {0} cameras", cameras.Count());
+                var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
+                if (timeSinceLastFullPoll.TotalSeconds >= pollingConfig.Alarms)
+                {
+                    await PollAlarms();
+                    LastAlarmPoll = DateTime.Now;
+                }
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to poll ezviz API");
             }
+        }
+
+        private async Task PollCameras()
+        {
+            logger.LogInformation("Polling ezviz API for full camera details");
+            cameras = await ezvizClient.GetCameras();
+            foreach (var camera in cameras)
+            {
+                SendMqtt("status", camera.SerialNumber, camera);
+                SendMqtt("lwt", camera.SerialNumber, (camera.Online ?? false) ? "ON" : "OFF", false);
+            }
+            logger.LogInformation("Polling done, published details of {0} cameras", cameras.Count());
+        }
+
+        private async Task PollAlarms()
+        {
+            logger.LogInformation("Polling ezviz API for full recent alarms");
+            foreach (var camera in cameras)
+            {
+                logger.LogInformation($"Checking [{camera.Name}] for alarms");
+
+                var alarms = (await camera.GetAlarms()).Where(a => (DateTime.Now - a.AlarmStartTimeParsed).TotalSeconds <= 300);
+                if (alarms.Any())
+                {
+                    SendMqtt("alarm", camera.SerialNumber, alarms);
+                }
+            }
+            logger.LogInformation("Polling alarms done");
         }
 
         void ConnectToMqtt()

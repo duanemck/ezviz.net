@@ -23,6 +23,7 @@ await Host.CreateDefaultBuilder(args)
         services.Configure<EzvizOptions>(hostContext.Configuration.GetSection("ezviz"));
         services.Configure<MqttOptions>(hostContext.Configuration.GetSection("mqtt"));
         services.Configure<JsonOptions>(hostContext.Configuration.GetSection("json"));
+        services.Configure<PollingOptions>(hostContext.Configuration.GetSection("polling"));
 
         services.AddSingleton<IMqttPublisher, MqttPublisher>();
     })

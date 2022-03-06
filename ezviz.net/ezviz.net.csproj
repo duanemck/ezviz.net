@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PublishTrimmed>false</PublishTrimmed>
+		<TrimMode>Link</TrimMode>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Refit" Version="6.3.2" />
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Refit" Version="6.3.2" />
+		<PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
+	</ItemGroup>
 
 </Project>

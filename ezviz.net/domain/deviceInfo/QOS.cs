@@ -2,12 +2,12 @@
 
 public class QOS
 {
-    public string Domain { get; set; }
-    public string ExternalIp { get; set; }
-    public string InternalIp { get; set; }
+    public string Domain { get; set; } = null!;
+    public string ExternalIp { get; set; } = null!;
+    public string InternalIp { get; set; } = null!;
     public int Port { get; set; }
-    public string Memo { get; set; }
-    public string IdcType { get; set; }
+    public string Memo { get; set; } = null!;
+    public string IdcType { get; set; } = null!;
     public int IsBackup { get; set; }
 }
 

@@ -8,6 +8,6 @@ namespace ezviz.net.domain
 {
     internal class GenericResponse
     {
-        public Meta Meta { get; set; }
+        public Meta Meta { get; set; } = null!;
     }
 }

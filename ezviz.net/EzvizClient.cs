@@ -18,7 +18,7 @@ public class EzvizClient
     private LoginArea? apiDetails;
     private LoginSession? session;
     private EzvizUser? user;
-    private SystemConfigInfo systemConfig;
+    private SystemConfigInfo systemConfig = null!;
 
     private IEzvizApi? api;
 
@@ -36,7 +36,7 @@ public class EzvizClient
 
     private string GetPasswordHash(string plaintext)
     {
-        using (var md5 = HashAlgorithm.Create("MD5"))
+        using (var md5 = MD5.Create())
         {
             var bytes = Encoding.UTF8.GetBytes(plaintext);
             var hashed = md5.ComputeHash(bytes);

@@ -12,8 +12,8 @@ internal class Meta
     public const int RESPONSE_CODE_MFA_ENABLED = 6002;
 
     public int Code { get; set; }
-    public string Message { get; set; }
-    public object MoreInfo { get; set; }
+    public string Message { get; set; } = null!;
+    public object MoreInfo { get; set; } = null!;
 
     public void ThrowIfNotOk(string message) 
     {

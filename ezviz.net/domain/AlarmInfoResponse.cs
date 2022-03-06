@@ -8,7 +8,7 @@ namespace ezviz.net.domain;
 
 internal class AlarmInfoResponse : GenericResponse
 {
-    public PageInfo Page { get; set; }
-    public ICollection<Alarm> Alarms { get; set; }
+    public PageInfo Page { get; set; } = null!;
+    public ICollection<Alarm> Alarms { get; set; } = null!;
 }
 
