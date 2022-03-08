@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ezviz_systemd.net
 {
-    public interface IMqttPublisher
+    public interface IMqttPublisher : IDisposable
     {
-        Task PublishAsync();
+        Task PublishAsync(CancellationToken stoppingToken);
         Task Init();
     }
 }

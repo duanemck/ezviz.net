@@ -24,18 +24,18 @@ internal interface IEzvizApi
     Task<ServiceUrlsResponse> GetServiceUrls([Header("sessionId")] string sessionId);
 
     [Get("/v3/userdevices/v1/resources/pagelist")]
-    Task<PagedListResponse> GetPagedList([Header("sessionId")] string sessionId, string filter);
+    Task<PagedListResponse> GetPagedList([Header("sessionId")] string sessionId, string filter, CancellationToken stoppingToken = default);
 
     [Post("/api/device/queryAlgorithmConfig")]
     Task<DetectionSensibilityResponse> GetDetectionSensibility([Header("sessionId")] string sessionId, 
-        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data, CancellationToken stoppingToken = default);
 
     [Put("/v3/devices/{serialNumber}/alarm/sound")]
     Task<IApiResponse> SetAlarmSoundLevel([Header("sessionId")] string sessionId, string serialNumber, 
         [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
     [Get("/v3/alarms/v2/advanced")]
-    Task<AlarmInfoResponse> GetAlarmInformation([Header("sessionId")] string sessionId, IDictionary<string,object> query);
+    Task<AlarmInfoResponse> GetAlarmInformation([Header("sessionId")] string sessionId, IDictionary<string,object> query, CancellationToken stoppingToken = default);
 
 
     [Put("/v3/devices/{serialNumber}/1/1/{switchType}/switchStatus")]

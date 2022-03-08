@@ -1,7 +1,6 @@
 ﻿namespace ezviz.net.domain.deviceInfo;
 
 using ezviz.net.exceptions;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 public class Device
@@ -20,9 +19,9 @@ public class Device
             cloud.ResourceId = cloudObjectKeyValue.Key;
             Cloud = cloud;
             ResourceInfo = response.ResourceInfos.First(r => r.ResourceId == cloud.ResourceId);
-            VTM = Deserialize<VTM>(response.VTM[cloud.ResourceId]);
-            Channel = Deserialize<Channel>(response.Channel[cloud.ResourceId]);
-            VideoQualities = Deserialize<VideoQuality[]>(response.Video_Quality[cloud.ResourceId]);
+            VTM = response.VTM == null ? new VTM() : Deserialize<VTM>(response.VTM[cloud.ResourceId]);
+            Channel = response.Channel == null ? new Channel() : Deserialize<Channel>(response.Channel[cloud.ResourceId]);
+            VideoQualities = response.Video_Quality == null? new VideoQuality[0] : Deserialize<VideoQuality[]>(response.Video_Quality[cloud.ResourceId]);
         }
         
         P2P = Deserialize<P2PEndpoint[]>(response.P2P[serial]);

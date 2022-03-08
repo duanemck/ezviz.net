@@ -1,5 +1,6 @@
 ﻿using ezviz.net;
 using ezviz.net.domain;
+using ezviz.net.exceptions;
 using ezviz_systemd.net.config;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -54,7 +55,11 @@ namespace ezviz_systemd.net
         public async Task Init()
         {
             ConnectToMqtt();
-            logger.LogInformation("Logging in to ezviz API");
+            if (string.IsNullOrEmpty(ezvizConfig?.Username) || string.IsNullOrEmpty(ezvizConfig?.Username))
+            {
+                throw new EzvizNetException("Please provide an ezviz username and password");
+            }
+            logger.LogInformation("Logging in to ezviz API as {0}", ezvizConfig.Username);
             await ezvizClient.Login();
         }
 
@@ -75,20 +80,20 @@ namespace ezviz_systemd.net
         }
 
 
-        public async Task PublishAsync()
+        public async Task PublishAsync(CancellationToken stoppingToken)
         {
             try
             {
                 var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
-                if (timeSinceLastFullPoll.TotalSeconds >= pollingConfig.Cameras)
+                if (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras)
                 {
-                    await PollCameras();
+                    await PollCameras(stoppingToken);
                     LastFullPoll = DateTime.Now;
                 }
                 var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
-                if (timeSinceLastFullPoll.TotalSeconds >= pollingConfig.Alarms)
+                if (timeSinceLastAlarmPoll.TotalMinutes >= pollingConfig.Alarms)
                 {
-                    await PollAlarms();
+                    await PollAlarms(stoppingToken);
                     LastAlarmPoll = DateTime.Now;
                 }
             }
@@ -98,23 +103,32 @@ namespace ezviz_systemd.net
             }
         }
 
-        private async Task PollCameras()
+        private async Task PollCameras(CancellationToken stoppingToken)
         {
             logger.LogInformation("Polling ezviz API for full camera details");
-            cameras = await ezvizClient.GetCameras();
+            cameras = await ezvizClient.GetCameras(stoppingToken);
+            
             foreach (var camera in cameras)
             {
+                if (stoppingToken.IsCancellationRequested)
+                {
+                    return;
+                }
                 SendMqtt("status", camera.SerialNumber, camera);
                 SendMqtt("lwt", camera.SerialNumber, (camera.Online ?? false) ? "ON" : "OFF", false);
             }
             logger.LogInformation("Polling done, published details of {0} cameras", cameras.Count());
         }
 
-        private async Task PollAlarms()
+        private async Task PollAlarms(CancellationToken stoppingToken)
         {
             logger.LogInformation("Polling ezviz API for full recent alarms");
             foreach (var camera in cameras)
             {
+                if (stoppingToken.IsCancellationRequested)
+                {
+                    return;
+                }
                 logger.LogInformation($"Checking [{camera.Name}] for alarms");
 
                 var alarms = (await camera.GetAlarms()).Where(a => (DateTime.Now - a.AlarmStartTimeParsed).TotalSeconds <= 300);
@@ -149,6 +163,16 @@ namespace ezviz_systemd.net
         {
             string utfString = Encoding.UTF8.GetString(e.Message, 0, e.Message.Length);
             logger.LogInformation($"Received message via MQTT from [{e.Topic}] => {utfString}");
+        }
+
+
+
+        public void Dispose()
+        {
+            if (mqttClient != null)
+            {
+                mqttClient.Disconnect();
+            }
         }
     }
 }

@@ -6,9 +6,9 @@ await Host.CreateDefaultBuilder(args)
     .UseSystemd()
     .ConfigureAppConfiguration(app =>
     {
-        app.AddUserSecrets<Program>();
+        app.AddJsonFile("/etc/ezviz/appsettings.json", true);
     })
-    .ConfigureServices((hostContext,services) =>
+    .ConfigureServices((hostContext, services) =>
     {
         services.AddLogging(builder =>
         {

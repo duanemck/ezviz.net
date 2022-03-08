@@ -22,7 +22,7 @@ namespace ezviz_systemd.net
             await publisher.Init();
             while (!stoppingToken.IsCancellationRequested)
             {
-                await publisher.PublishAsync();
+                await publisher.PublishAsync(stoppingToken);
                 await Task.Delay(500, stoppingToken);
             }
         }
