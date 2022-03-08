@@ -44,7 +44,10 @@ internal interface IEzvizApi
 
 
     [Post("/v3/userdevices/v1/group/switchDefenceMode")]
-    Task <DefenceModeResponse> SetDefenceMode([Header("sessionId")] string sessionId,
+    Task <SetDefenceModeResponse> SetDefenceMode([Header("sessionId")] string sessionId,
         [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data, CancellationToken stoppingToken = default);
+
+    [Post("/v3/userdevices/v1/group/defenceMode?groupId=-1")]
+    Task<GetDefenceModeResponse> GetDefenceMode([Header("sessionId")] string sessionId, CancellationToken stoppingToken = default);
 }
 

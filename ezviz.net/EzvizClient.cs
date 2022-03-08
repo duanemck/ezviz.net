@@ -128,6 +128,13 @@ public class EzvizClient
         response.Meta.ThrowIfNotOk("Could not set Defence Mode");
     }
 
+    public async Task<DefenceMode> GetDefenceMode()
+    {
+        var response = await api.GetDefenceMode(CurrentSessionId);
+        response.Meta.ThrowIfNotOk("Could not get Defence Mode");
+        return (DefenceMode)Enum.ToObject(typeof(DefenceMode), int.Parse(response.Mode));
+    }
+
     private async Task<SystemConfigInfo> GetSystemConfig()
     {
         var response = await api.GetServiceUrls(CurrentSessionId);
