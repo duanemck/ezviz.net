@@ -114,6 +114,7 @@ namespace ezviz_systemd.net
                 {
                     return;
                 }
+                await camera.GetDetectionSensibilityAsync();
                 SendMqtt("status", camera.SerialNumber, camera);
                 SendMqtt("lwt", camera.SerialNumber, (camera.Online ?? false) ? "ON" : "OFF", false);
             }
@@ -136,6 +137,8 @@ namespace ezviz_systemd.net
                 {
                     SendMqtt("alarm", camera.SerialNumber, alarms);
                 }
+
+               
             }
             logger.LogInformation("Polling alarms done");
         }

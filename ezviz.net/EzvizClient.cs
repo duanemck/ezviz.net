@@ -118,6 +118,16 @@ public class EzvizClient
             .Cast<Camera>();
     }
 
+    public async Task SetDefenceMode(DefenceMode mode)
+    {
+        var payload = new Dictionary<string, object>() {
+            { "groupId", -1 },
+            { "mode", (int)mode }
+        };
+        var response = await api.SetDefenceMode(CurrentSessionId, payload);
+        response.Meta.ThrowIfNotOk("Could not set Defence Mode");
+    }
+
     private async Task<SystemConfigInfo> GetSystemConfig()
     {
         var response = await api.GetServiceUrls(CurrentSessionId);
@@ -165,11 +175,11 @@ public class EzvizClient
         {
             throw new ArgumentNullException(nameof(serialNumber));
         }
-        var query = new Dictionary<string, object>() { 
-            { "deviceSerials", serialNumber }, 
-            { "queryType", -1 }, 
-            { "limit", 10 }, 
-            { "stype", -1 } 
+        var query = new Dictionary<string, object>() {
+            { "deviceSerials", serialNumber },
+            { "queryType", -1 },
+            { "limit", 10 },
+            { "stype", -1 }
         };
         var response = await api.GetAlarmInformation(CurrentSessionId, query);
         response.Meta.ThrowIfNotOk("Querying alarms");
@@ -177,7 +187,7 @@ public class EzvizClient
         return response.Alarms;
     }
 
-    internal async Task ChangeSwitch(string? serialNumber,SwitchType @switch, bool enable)
+    internal async Task ChangeSwitch(string? serialNumber, SwitchType @switch, bool enable)
     {
         if (serialNumber == null)
         {
@@ -188,7 +198,7 @@ public class EzvizClient
             { "serial", serialNumber },
             { "channelNo" , "1" },
             { "type", (int)@switch }
-            
+
         };
         var response = await api.ChangeSwitch(CurrentSessionId, serialNumber, @switch, payload);
         response.Meta.ThrowIfNotOk($"Changing switch {@switch} to {enable}");

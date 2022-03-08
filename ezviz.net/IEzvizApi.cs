@@ -41,5 +41,10 @@ internal interface IEzvizApi
     [Put("/v3/devices/{serialNumber}/1/1/{switchType}/switchStatus")]
     Task<GenericResponse> ChangeSwitch([Header("sessionId")] string sessionId, string serialNumber,
         SwitchType switchType, [Body(BodySerializationMethod.UrlEncoded)] IDictionary<string, object> body);
+
+
+    [Post("/v3/userdevices/v1/group/switchDefenceMode")]
+    Task <DefenceModeResponse> SetDefenceMode([Header("sessionId")] string sessionId,
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data, CancellationToken stoppingToken = default);
 }
 

@@ -47,6 +47,7 @@ namespace ezviz.net.domain
         public int? BatteryLevel => (Status != null && Status.Optionals.ContainsKey("powerRemaining")) ? int.Parse(Status.Optionals["powerRemaining"]) : 0;
         public int PirStatus => Status?.PirStatus ?? 0;
 
+        public DetectionSensitivityLevel DetectionSensitivity { get; set; }
         public bool? Online => Status != null && Status.Optionals.ContainsKey("OnlineStatus") ? Status.Optionals["OnlineStatus"] == "1" : null;
         public decimal DiskCapacityMB => Status != null && Status.Optionals.ContainsKey("diskCapacity")
             ? decimal.Parse(Status.Optionals["diskCapacity"].Split(",").First())
@@ -65,7 +66,7 @@ namespace ezviz.net.domain
             }
             var format = "yyyy-MM-dd HH:mm:ss";
             var lastAlarmTime = DateTime.ParseExact(
-                lastAlarm.AlarmStartTimeStr.Replace("Today", today.ToString(format)), 
+                lastAlarm.AlarmStartTimeStr.Replace("Today", today.ToString(format)),
                 format, CultureInfo.InvariantCulture);
 
             var timePassedInSeconds = (int)((DateTime.Now - lastAlarmTime).TotalSeconds);
@@ -82,32 +83,35 @@ namespace ezviz.net.domain
         }
 
 
-        public async Task<string> GetDetectionSensibilityAsync()
+        public async Task<DetectionSensitivityLevel> GetDetectionSensibilityAsync()
         {
+            DetectionSensitivity = DetectionSensitivityLevel.Unknown;
             if (Switches?.FirstOrDefault(s => s.Type == SwitchType.AUTO_SLEEP)?.Enable ?? false)
             {
-                return "Hibernate";
+                DetectionSensitivity = DetectionSensitivityLevel.Hibernate;
             }
             else
             {
                 var algorithms = await client.GetDetectionSensibility(SerialNumber);
-                if (algorithms == null)
+                if (algorithms != null)
                 {
-                    return "Unknown";
+                    var type = (DeviceInfo?.DeviceCategory == DeviceCategories.BATTERY_CAMERA_DEVICE_CATEGORY)
+                        ? "3"
+                        : "0";
+                    var algorithmValue = algorithms.FirstOrDefault(alg => alg.Type == type)?.Value;
+                    if (algorithmValue != null)
+                    {
+                        DetectionSensitivity = (DetectionSensitivityLevel)Enum.ToObject(typeof(DetectionSensitivityLevel), int.Parse(algorithmValue));
+                    }
                 }
-                var type = (DeviceInfo?.DeviceCategory == DeviceCategories.BATTERY_CAMERA_DEVICE_CATEGORY)
-                    ? "3"
-                    : "0";
-
-                return algorithms.FirstOrDefault(alg => alg.Type == type)?.Value ?? "Unknown";
             }
-
+            return DetectionSensitivity;
         }
 
         public async Task SetAlarmSoundLevel(AlarmSound soundLevel, bool enabled)
         {
             await client.SetAlarmSoundLevel(SerialNumber, enabled, soundLevel);
-            
+
             Status.AlarmSoundMode = soundLevel;
         }
 
