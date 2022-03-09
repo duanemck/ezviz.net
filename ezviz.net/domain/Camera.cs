@@ -1,4 +1,5 @@
 ﻿using ezviz.net.domain.deviceInfo;
+using ezviz.net.util;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -55,6 +56,8 @@ namespace ezviz.net.domain
 
         public decimal DiskCapacityGB => DiskCapacityMB / 1024;
 
+        public AlarmDetectionMethod AlarmDetectionMethod { get; set; }
+
         public async Task<MotionAlarm?> GetLastAlarm()
         {
             var alarms = await GetAlarms();
@@ -101,7 +104,7 @@ namespace ezviz.net.domain
                     var algorithmValue = algorithms.FirstOrDefault(alg => alg.Type == type)?.Value;
                     if (algorithmValue != null)
                     {
-                        DetectionSensitivity = (DetectionSensitivityLevel)Enum.ToObject(typeof(DetectionSensitivityLevel), int.Parse(algorithmValue));
+                        DetectionSensitivity = EnumX.ToObject<DetectionSensitivityLevel>(int.Parse(algorithmValue));
                     }
                 }
             }
@@ -163,6 +166,18 @@ namespace ezviz.net.domain
         public async Task ToggleMobileTracking(bool enabled)
         {
             await client.ChangeSwitch(SerialNumber, SwitchType.MobileTracking, enabled);
+        }
+
+        public async Task<AlarmDetectionMethod> GetAlarmDetectionMethod()
+        {
+            AlarmDetectionMethod = await client.GetAlarmDetectionMethod(SerialNumber);
+            return AlarmDetectionMethod;
+        }
+
+        public async Task GetExtraInformation()
+        {
+            await GetAlarmDetectionMethod();
+            await GetDetectionSensibilityAsync();
         }
     }
 }

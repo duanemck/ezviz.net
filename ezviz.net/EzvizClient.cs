@@ -1,9 +1,11 @@
 ﻿using ezviz.net.domain;
 using ezviz.net.domain.deviceInfo;
 using ezviz.net.exceptions;
+using ezviz.net.util;
 using Refit;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace ezviz.net;
 public class EzvizClient
@@ -132,7 +134,7 @@ public class EzvizClient
     {
         var response = await api.GetDefenceMode(CurrentSessionId);
         response.Meta.ThrowIfNotOk("Could not get Defence Mode");
-        return (DefenceMode)Enum.ToObject(typeof(DefenceMode), int.Parse(response.Mode));
+        return EnumX.ToObject<DefenceMode>(int.Parse(response.Mode));
     }
 
     private async Task<SystemConfigInfo> GetSystemConfig()
@@ -225,5 +227,23 @@ public class EzvizClient
         };
         var response = await api.ChangeCameraArmedStatus(CurrentSessionId, serialNumber,0, payload);
         response.Meta.ThrowIfNotOk($"Setting camera armed to {armed}");
+    }
+
+    internal async Task<AlarmDetectionMethod> GetAlarmDetectionMethod(string? serialNumber)
+    {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
+
+        var response = await api.GetDeviceConfig(CurrentSessionId, serialNumber, 0, "Alarm_DetectHumanCar");
+        response.Meta.ThrowIfNotOk($"Getting alarm detection method");
+
+        var parsedResponse = JsonSerializer.Deserialize<IDictionary<string, object>>(response.ValueInfo);
+        if (parsedResponse == null)
+        {
+            throw new EzvizNetException($"Could not parse device config response {response.ValueInfo}");
+        }
+        return EnumX.ToObject<AlarmDetectionMethod>((int) parsedResponse["type"]);
     }
 }

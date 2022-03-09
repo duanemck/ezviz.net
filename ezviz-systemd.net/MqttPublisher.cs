@@ -114,7 +114,7 @@ namespace ezviz_systemd.net
                 {
                     return;
                 }
-                await camera.GetDetectionSensibilityAsync();
+                await camera.GetExtraInformation();
                 //logger.LogInformation(camera.Name);
                 //logger.LogInformation("- ON:");
                 //foreach (var sw in camera.Switches.Where(sw=>sw.Enable))
