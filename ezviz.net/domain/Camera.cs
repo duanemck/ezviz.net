@@ -57,6 +57,7 @@ namespace ezviz.net.domain
         public decimal DiskCapacityGB => DiskCapacityMB / 1024;
 
         public AlarmDetectionMethod AlarmDetectionMethod { get; set; }
+        public DisplayMode ImageDisplayMode { get; set; }
 
         public async Task<MotionAlarm?> GetLastAlarm()
         {
@@ -174,10 +175,19 @@ namespace ezviz.net.domain
             return AlarmDetectionMethod;
         }
 
+        public async Task<DisplayMode> GetImageDisplayMode()
+        {
+            ImageDisplayMode = await client.GetImageDisplayMode(SerialNumber);
+            return ImageDisplayMode;
+        }
+
         public async Task GetExtraInformation()
         {
-            await GetAlarmDetectionMethod();
-            await GetDetectionSensibilityAsync();
+            await Task.WhenAll(new Task[] {
+                 GetAlarmDetectionMethod(),
+                 GetDetectionSensibilityAsync(),
+                 GetImageDisplayMode()
+            });
         }
     }
 }

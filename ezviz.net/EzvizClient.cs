@@ -225,7 +225,7 @@ public class EzvizClient
             { "actor", "V" }
 
         };
-        var response = await api.ChangeCameraArmedStatus(CurrentSessionId, serialNumber,0, payload);
+        var response = await api.ChangeCameraArmedStatus(CurrentSessionId, serialNumber, 0, payload);
         response.Meta.ThrowIfNotOk($"Setting camera armed to {armed}");
     }
 
@@ -244,6 +244,24 @@ public class EzvizClient
         {
             throw new EzvizNetException($"Could not parse device config response {response.ValueInfo}");
         }
-        return EnumX.ToObject<AlarmDetectionMethod>((int) parsedResponse["type"]);
+        return EnumX.ToObject<AlarmDetectionMethod>((int)parsedResponse["type"]);
+    }
+
+    internal async Task<DisplayMode> GetImageDisplayMode(string? serialNumber)
+    {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
+
+        var response = await api.GetDeviceConfig(CurrentSessionId, serialNumber, 0, "display_mode");
+        response.Meta.ThrowIfNotOk($"Getting image display method");
+
+        var parsedResponse = JsonSerializer.Deserialize<IDictionary<string, object>>(response.ValueInfo);
+        if (parsedResponse == null)
+        {
+            throw new EzvizNetException($"Could not parse device config response {response.ValueInfo}");
+        }
+        return EnumX.ToObject<DisplayMode>((int)parsedResponse["mode"]);
     }
 }
