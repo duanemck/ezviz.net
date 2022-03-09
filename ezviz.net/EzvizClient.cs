@@ -144,19 +144,29 @@ public class EzvizClient
         return response.SystemConfigInfo;
     }
 
-    internal async Task<ICollection<Algorithm>?> GetDetectionSensibility(string? serialNumber)
+    internal async Task<ICollection<Algorithm>?> GetDetectionSensitivity(string? serialNumber)
     {
         if (serialNumber == null)
         {
             throw new ArgumentNullException(nameof(serialNumber));
         }
         var payload = new Dictionary<string, object>() { { "subSerial", serialNumber } };
-        var response = await api.GetDetectionSensibility(CurrentSessionId, payload);
+        var response = await api.GetDetectionSensitivity(CurrentSessionId, payload);
         if (response.ResultCode != "0")
         {
             return null;
         }
         return response.AlgorithmConfig.AlgorithmList;
+    }
+
+    internal async Task SetDetectionSensitivity(string? serialNumber, int type, DetectionSensitivityLevel level)
+    {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
+        var response = await api.SetDetectionSensitivity(CurrentSessionId, serialNumber, 1, type, (int)level);
+        response.Meta.ThrowIfNotOk("Setting device sensitivity");
     }
 
     internal async Task SetAlarmSoundLevel(string? serialNumber, bool enable, AlarmSound level)
@@ -236,7 +246,7 @@ public class EzvizClient
             throw new ArgumentNullException(nameof(serialNumber));
         }
 
-        var response = await api.GetDeviceConfig(CurrentSessionId, serialNumber, 0, "Alarm_DetectHumanCar");
+        var response = await api.GetDeviceConfig(CurrentSessionId, serialNumber, 1, "Alarm_DetectHumanCar");
         response.Meta.ThrowIfNotOk($"Getting alarm detection method");
 
         var parsedResponse = JsonSerializer.Deserialize<IDictionary<string, object>>(response.ValueInfo);
@@ -254,7 +264,7 @@ public class EzvizClient
             throw new ArgumentNullException(nameof(serialNumber));
         }
 
-        var response = await api.GetDeviceConfig(CurrentSessionId, serialNumber, 0, "display_mode");
+        var response = await api.GetDeviceConfig(CurrentSessionId, serialNumber, 1, "display_mode");
         response.Meta.ThrowIfNotOk($"Getting image display method");
 
         var parsedResponse = JsonSerializer.Deserialize<IDictionary<string, object>>(response.ValueInfo);
@@ -263,5 +273,45 @@ public class EzvizClient
             throw new EzvizNetException($"Could not parse device config response {response.ValueInfo}");
         }
         return EnumX.ToObject<DisplayMode>((int)parsedResponse["mode"]);
+    }
+
+    internal async Task SetAlarmDetectionMethod(string? serialNumber, AlarmDetectionMethod method)
+    {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
+
+        var value = JsonSerializer.Serialize(new Dictionary<string, object>()
+        {
+            {"type", (int)method }
+        });
+
+        var payload = new Dictionary<string, object>() {
+            { "key", "Alarm_DetectHumanCar" },
+            { "value", value}
+        };
+        var response = await api.SetDeviceConfig(CurrentSessionId, serialNumber, 0, payload);
+        response.Meta.ThrowIfNotOk($"Setting alarm detection method");
+    }
+
+    internal async Task SetImageDisplayMode(string? serialNumber, DisplayMode method)
+    {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
+
+        var value = JsonSerializer.Serialize(new Dictionary<string, object>()
+        {
+            {"mode", (int)method }
+        });
+
+        var payload = new Dictionary<string, object>() {
+            { "key", "display_mode" },
+            { "value", value}
+        };
+        var response = await api.SetDeviceConfig(CurrentSessionId, serialNumber, 0, payload);
+        response.Meta.ThrowIfNotOk($"Setting display mode");
     }
 }

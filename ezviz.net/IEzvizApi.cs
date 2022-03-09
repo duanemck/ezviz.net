@@ -27,8 +27,11 @@ internal interface IEzvizApi
     Task<PagedListResponse> GetPagedList([Header("sessionId")] string sessionId, string filter, CancellationToken stoppingToken = default);
 
     [Post("/api/device/queryAlgorithmConfig")]
-    Task<DetectionSensibilityResponse> GetDetectionSensibility([Header("sessionId")] string sessionId, 
+    Task<DetectionSensibilityResponse> GetDetectionSensitivity([Header("sessionId")] string sessionId, 
         [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data, CancellationToken stoppingToken = default);
+
+    [Put("/v3/devconfig/v1/sensitivity/{deviceSerial}/{channel}/{sensitivityType}/{value}")]
+    Task<GenericResponse> SetDetectionSensitivity([Header("sessionId")] string sessionId, string deviceSerial, int channel, int sensitivityType, int value);
 
     [Put("/v3/devices/{serialNumber}/alarm/sound")]
     Task<IApiResponse> SetAlarmSoundLevel([Header("sessionId")] string sessionId, string serialNumber, 
@@ -45,16 +48,27 @@ internal interface IEzvizApi
 
     [Post("/v3/userdevices/v1/group/switchDefenceMode")]
     Task <SetDefenceModeResponse> SetDefenceMode([Header("sessionId")] string sessionId,
-        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data, CancellationToken stoppingToken = default);
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
     [Post("/v3/userdevices/v1/group/defenceMode?groupId=-1")]
-    Task<GetDefenceModeResponse> GetDefenceMode([Header("sessionId")] string sessionId, CancellationToken stoppingToken = default);
+    Task<GetDefenceModeResponse> GetDefenceMode([Header("sessionId")] string sessionId);
 
     [Put("v3/devices/{deviceSerial}/{channel}/changeDefenceStatusReq")]
     Task<SetCameraArmedModeResponse> ChangeCameraArmedStatus([Header("sessionId")] string sessionId,string deviceSerial, int channel,
-        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data, CancellationToken stoppingToken = default);
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
     [Get("/v3/devconfig/v1/keyValue/{{deviceSerial}}/{{channel}}/op")]
     Task<GetDeviceConfigResponse> GetDeviceConfig([Header("sessionId")] string sessionId, string deviceSerial, int channel, [Query("key")] string key);
+
+    [Put("/v3/devconfig/v1/keyValue/{{deviceSerial}}/{{channel}}/op")]
+    Task<GenericResponse> SetDeviceConfig([Header("sessionId")] string sessionId, string deviceSerial, int channel,
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+
+
 }
 
+/*
+ * Possible other API calls (from DeviceApi.java)
+ * 
+ *     @GET("v3/userdevices/v1/devices/status")
+    EzvizCall<DevicesStatusResp> getDevicesStatus(@Query("deviceSerials") String str);*/

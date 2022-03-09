@@ -96,7 +96,7 @@ namespace ezviz.net.domain
             }
             else
             {
-                var algorithms = await client.GetDetectionSensibility(SerialNumber);
+                var algorithms = await client.GetDetectionSensitivity(SerialNumber);
                 if (algorithms != null)
                 {
                     var type = (DeviceInfo?.DeviceCategory == DeviceCategories.BATTERY_CAMERA_DEVICE_CATEGORY)
@@ -110,6 +110,15 @@ namespace ezviz.net.domain
                 }
             }
             return DetectionSensitivity;
+        }
+
+        public async Task SetDetectionSensibilityAsync(DetectionSensitivityLevel level)
+        {
+            var type = (DeviceInfo?.DeviceCategory == DeviceCategories.BATTERY_CAMERA_DEVICE_CATEGORY)
+                        ? 3
+                        : 0;
+            await client.SetDetectionSensitivity(SerialNumber, type, level);
+            DetectionSensitivity = level;
         }
 
         public async Task Arm()
@@ -179,6 +188,18 @@ namespace ezviz.net.domain
         {
             ImageDisplayMode = await client.GetImageDisplayMode(SerialNumber);
             return ImageDisplayMode;
+        }
+
+        public async Task SetAlarmDetectionMethod(AlarmDetectionMethod method)
+        {
+            await client.SetAlarmDetectionMethod(SerialNumber, method);
+            AlarmDetectionMethod = method;
+        }
+
+        public async Task SetImageDisplayMode(DisplayMode mode)
+        {
+            await client.SetImageDisplayMode(SerialNumber, mode);
+            ImageDisplayMode = mode;
         }
 
         public async Task GetExtraInformation()
