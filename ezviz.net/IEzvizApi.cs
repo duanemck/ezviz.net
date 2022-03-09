@@ -53,18 +53,20 @@ internal interface IEzvizApi
     [Post("/v3/userdevices/v1/group/defenceMode?groupId=-1")]
     Task<GetDefenceModeResponse> GetDefenceMode([Header("sessionId")] string sessionId);
 
-    [Put("v3/devices/{deviceSerial}/{channel}/changeDefenceStatusReq")]
+    [Put("/v3/devices/{deviceSerial}/{channel}/changeDefenceStatusReq")]
     Task<SetCameraArmedModeResponse> ChangeCameraArmedStatus([Header("sessionId")] string sessionId,string deviceSerial, int channel,
         [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
-    [Get("/v3/devconfig/v1/keyValue/{{deviceSerial}}/{{channel}}/op")]
+    [Get("/v3/devconfig/v1/keyValue/{deviceSerial}/{channel}/op")]
     Task<GetDeviceConfigResponse> GetDeviceConfig([Header("sessionId")] string sessionId, string deviceSerial, int channel, [Query("key")] string key);
 
-    [Put("/v3/devconfig/v1/keyValue/{{deviceSerial}}/{{channel}}/op")]
+    [Put("/v3/devconfig/v1/keyValue/{deviceSerial}/{channel}/op")]
     Task<GenericResponse> SetDeviceConfig([Header("sessionId")] string sessionId, string deviceSerial, int channel,
         [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
-
+    [Post("/v3/devices/{deviceSerial}/alarm/setChannelWhistle")]
+    Task<GenericResponse> SetChannelWhistle([Header("sessionId")] string sessionId, string deviceSerial,
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 }
 
 /*

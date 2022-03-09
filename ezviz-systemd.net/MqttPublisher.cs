@@ -82,15 +82,17 @@ namespace ezviz_systemd.net
 
         public async Task PublishAsync(CancellationToken stoppingToken)
         {
+            var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
+            var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
             try
             {
-                var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
+
                 if (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras)
                 {
                     await PollCameras(stoppingToken);
                     LastFullPoll = DateTime.Now;
                 }
-                var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
+
                 if (timeSinceLastAlarmPoll.TotalMinutes >= pollingConfig.Alarms)
                 {
                     await PollAlarms(stoppingToken);
@@ -100,6 +102,7 @@ namespace ezviz_systemd.net
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to poll ezviz API");
+                LastFullPoll = LastAlarmPoll = DateTime.Now;
             }
         }
 
@@ -107,9 +110,10 @@ namespace ezviz_systemd.net
         {
             logger.LogInformation("Polling ezviz API for full camera details");
             cameras = await ezvizClient.GetCameras(stoppingToken);
-            
+
             foreach (var camera in cameras)
             {
+               // await ezvizClient.SetChannelWhistle(camera.SerialNumber);
                 if (stoppingToken.IsCancellationRequested)
                 {
                     return;
@@ -149,7 +153,7 @@ namespace ezviz_systemd.net
                     SendMqtt("alarm", camera.SerialNumber, alarms);
                 }
 
-               
+
             }
             logger.LogInformation("Polling alarms done");
         }
