@@ -115,6 +115,17 @@ namespace ezviz_systemd.net
                     return;
                 }
                 await camera.GetDetectionSensibilityAsync();
+                //logger.LogInformation(camera.Name);
+                //logger.LogInformation("- ON:");
+                //foreach (var sw in camera.Switches.Where(sw=>sw.Enable))
+                //{
+                //    logger.LogInformation($"--- {sw.Type}");
+                //}
+                //logger.LogInformation("- OFF:");
+                //foreach (var sw in camera.Switches.Where(sw => !sw.Enable))
+                //{
+                //    logger.LogInformation($"--- {sw.Type}");
+                //}
                 SendMqtt("status", camera.SerialNumber, camera);
                 SendMqtt("lwt", camera.SerialNumber, (camera.Online ?? false) ? "ON" : "OFF", false);
             }

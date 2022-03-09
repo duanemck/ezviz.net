@@ -49,5 +49,9 @@ internal interface IEzvizApi
 
     [Post("/v3/userdevices/v1/group/defenceMode?groupId=-1")]
     Task<GetDefenceModeResponse> GetDefenceMode([Header("sessionId")] string sessionId, CancellationToken stoppingToken = default);
+
+    [Put("v3/devices/{deviceSerial}/{channel}/changeDefenceStatusReq")]
+    Task<SetCameraArmedModeResponse> ChangeCameraArmedStatus([Header("sessionId")] string sessionId,string deviceSerial, int channel,
+        [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data, CancellationToken stoppingToken = default);
 }
 

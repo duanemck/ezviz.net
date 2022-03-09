@@ -50,7 +50,7 @@ public class Device
 
     public EzvizDeviceInfo DeviceInfo { get; set; } = null!;
     public EzvizResourceInfo ResourceInfo { get; set; } = null!;
-    internal ICollection<Switch> Switches { get; set; } = null!;
+    public ICollection<Switch> Switches { get; set; } = null!;
     public Wifi Wifi { get; set; } = null!;
 
 

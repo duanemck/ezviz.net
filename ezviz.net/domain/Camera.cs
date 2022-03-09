@@ -28,14 +28,14 @@ namespace ezviz.net.domain
         public bool UpgradeInProgress => Status?.UpgradeStatus == 0;
         public decimal UpgradePercent => Status?.UpgradeProcess ?? 0M;
         public bool Sleeping => Switches?
-            .Where(sw => sw.Type == SwitchType.SLEEP || sw.Type == SwitchType.AUTO_SLEEP)
+            .Where(sw => sw.Type == SwitchType.Sleep || sw.Type == SwitchType.AutoSleep)
             .Any(sw => sw.Enable) ?? false;
-        public bool PrivacyModeEnabled => Switches?.Any(sw => sw.Type == SwitchType.PRIVACY && sw.Enable) ?? false;
-        public bool AudioEnabled => Switches?.Any(sw => sw.Type == SwitchType.SOUND && sw.Enable) ?? false;
-        public bool InfraredEnabled => Switches?.Any(sw => sw.Type == SwitchType.INFRARED_LIGHT && sw.Enable) ?? false;
-        public bool StateLedEnabled => Switches?.Any(sw => sw.Type == SwitchType.LIGHT && sw.Enable) ?? false;
+        public bool PrivacyModeEnabled => Switches?.Any(sw => sw.Type == SwitchType.Privacy && sw.Enable) ?? false;
+        public bool AudioEnabled => Switches?.Any(sw => sw.Type == SwitchType.Sound && sw.Enable) ?? false;
+        public bool InfraredEnabled => Switches?.Any(sw => sw.Type == SwitchType.InfraredLight && sw.Enable) ?? false;
+        public bool StateLedEnabled => Switches?.Any(sw => sw.Type == SwitchType.Light && sw.Enable) ?? false;
 
-        public bool MobileTrackingEnabled => Switches?.Any(sw => sw.Type == SwitchType.MOBILE_TRACKING && sw.Enable) ?? false;
+        public bool MobileTrackingEnabled => Switches?.Any(sw => sw.Type == SwitchType.MobileTracking && sw.Enable) ?? false;
         public bool AlarmNotify => Status?.GlobalStatus == 1;
         public bool NotifyOffline => DeviceInfo?.OfflineNotify == 1;
         public AlarmSound? AlarmSoundMode => Status?.AlarmSoundMode;
@@ -86,7 +86,7 @@ namespace ezviz.net.domain
         public async Task<DetectionSensitivityLevel> GetDetectionSensibilityAsync()
         {
             DetectionSensitivity = DetectionSensitivityLevel.Unknown;
-            if (Switches?.FirstOrDefault(s => s.Type == SwitchType.AUTO_SLEEP)?.Enable ?? false)
+            if (Switches?.FirstOrDefault(s => s.Type == SwitchType.AutoSleep)?.Enable ?? false)
             {
                 DetectionSensitivity = DetectionSensitivityLevel.Hibernate;
             }
@@ -108,6 +108,16 @@ namespace ezviz.net.domain
             return DetectionSensitivity;
         }
 
+        public async Task Arm()
+        {
+            await client.SetCameraArmed(SerialNumber, true);
+        }
+
+        public async Task Disarm()
+        {
+            await client.SetCameraArmed(SerialNumber, false);
+        }
+
         public async Task SetAlarmSoundLevel(AlarmSound soundLevel, bool enabled)
         {
             await client.SetAlarmSoundLevel(SerialNumber, enabled, soundLevel);
@@ -127,32 +137,32 @@ namespace ezviz.net.domain
 
         public async Task ToggleAudio(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.SOUND, enabled);
+            await client.ChangeSwitch(SerialNumber, SwitchType.Sound, enabled);
         }
 
         public async Task ToggleLed(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.LIGHT, enabled);
+            await client.ChangeSwitch(SerialNumber, SwitchType.Light, enabled);
         }
 
         public async Task ToggleInfrared(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.INFRARED_LIGHT, enabled);
+            await client.ChangeSwitch(SerialNumber, SwitchType.InfraredLight, enabled);
         }
 
         public async Task TogglePrivacyMode(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.PRIVACY, enabled);
+            await client.ChangeSwitch(SerialNumber, SwitchType.Privacy, enabled);
         }
 
         public async Task ToggleSleepMode(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.SLEEP, enabled);
+            await client.ChangeSwitch(SerialNumber, SwitchType.Sleep, enabled);
         }
 
         public async Task ToggleMobileTracking(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.MOBILE_TRACKING, enabled);
+            await client.ChangeSwitch(SerialNumber, SwitchType.MobileTracking, enabled);
         }
     }
 }

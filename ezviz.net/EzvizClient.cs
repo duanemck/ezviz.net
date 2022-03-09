@@ -210,4 +210,20 @@ public class EzvizClient
         var response = await api.ChangeSwitch(CurrentSessionId, serialNumber, @switch, payload);
         response.Meta.ThrowIfNotOk($"Changing switch {@switch} to {enable}");
     }
+
+    internal async Task SetCameraArmed(string? serialNumber, bool armed)
+    {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
+        var payload = new Dictionary<string, object>() {
+            { "type", "Global" },
+            { "status" , armed ? "1" : "0" },
+            { "actor", "V" }
+
+        };
+        var response = await api.ChangeCameraArmedStatus(CurrentSessionId, serialNumber,0, payload);
+        response.Meta.ThrowIfNotOk($"Setting camera armed to {armed}");
+    }
 }
