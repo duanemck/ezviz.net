@@ -80,7 +80,6 @@ internal class MqttPublisher : IMqttPublisher
         }
     }
 
-
     public async Task PublishAsync(CancellationToken stoppingToken)
     {
         var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
@@ -114,23 +113,10 @@ internal class MqttPublisher : IMqttPublisher
 
         foreach (var camera in cameras)
         {
-            // await ezvizClient.SetChannelWhistle(camera.SerialNumber);
             if (stoppingToken.IsCancellationRequested)
             {
                 return;
             }
-            await camera.GetExtraInformation();
-            //logger.LogInformation(camera.Name);
-            //logger.LogInformation("- ON:");
-            //foreach (var sw in camera.Switches.Where(sw=>sw.Enable))
-            //{
-            //    logger.LogInformation($"--- {sw.Type}");
-            //}
-            //logger.LogInformation("- OFF:");
-            //foreach (var sw in camera.Switches.Where(sw => !sw.Enable))
-            //{
-            //    logger.LogInformation($"--- {sw.Type}");
-            //}
             SendMqtt("status", camera.SerialNumber, camera);
             SendMqtt("lwt", camera.SerialNumber, (camera.Online ?? false) ? "ON" : "OFF", false);
         }
@@ -183,8 +169,6 @@ internal class MqttPublisher : IMqttPublisher
         string utfString = Encoding.UTF8.GetString(e.Message, 0, e.Message.Length);
         logger.LogInformation($"Received message via MQTT from [{e.Topic}] => {utfString}");
     }
-
-
 
     public void Dispose()
     {

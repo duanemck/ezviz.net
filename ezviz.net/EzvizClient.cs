@@ -106,7 +106,6 @@ public class EzvizClient
             case Meta.RESPONSE_CODE_INCORRECT_REGION: throw new InvalidRegionException(response.LoginArea.ApiDomain);
         }
         throw new LoginException($"Login failed, unknown response code [{response.Meta.Code}]");
-
     }
 
     void DecodeToken(LoginSession session)
@@ -131,10 +130,16 @@ public class EzvizClient
                                                                     "CHANNEL, VTM,DETECTOR, FEATURE, CUSTOM_TAG, " +
                                                                     "UPGRADE,VIDEO_QUALITY, QOS, PRODUCTS_INFO, FEATURE_INFO", stoppingToken);
         response.Meta.ThrowIfNotOk("Getting device list");
-        return response.DeviceInfos
+        var cameras = response.DeviceInfos
             .Select(device => new Camera(device, response, this))
             .Where(device => SUPPORTED_DEVICE_CATEGORIES.Contains(device.DeviceInfo.DeviceCategory))
             .Cast<Camera>();
+
+        foreach (var c in cameras)
+        {
+            await c.GetExtraInformation();
+        }
+        return cameras;
     }
 
     public async Task SetDefenceMode(DefenceMode mode)
@@ -337,7 +342,7 @@ public class EzvizClient
     }
 }
 
-public class Token
+internal class Token
 {
     public long exp { get; set; }
 }
