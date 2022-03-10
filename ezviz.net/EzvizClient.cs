@@ -335,40 +335,6 @@ public class EzvizClient
         var response = await api.SetDeviceConfig(await GetSessionId(), serialNumber, 0, payload);
         response.Meta.ThrowIfNotOk($"Setting display mode");
     }
-
-    public async Task SetChannelWhistle(string? serialNumber)
-    {
-        if (serialNumber == null)
-        {
-            throw new ArgumentNullException(nameof(serialNumber));
-        }
-
-        var payload = new Dictionary<string, object>() {
-            {
-                "channelWhistleList" , new Whistle[]{ new Whistle{
-                                                Channel = 1,
-                                                DeviceSerial = serialNumber,
-                                                Duration = 10,
-                                                Status = 1,
-                                                Volume =10
-                                       } }
-             }
-        };
-        var response = await api.SetChannelWhistle(await GetSessionId(), serialNumber, payload);
-        response.Meta.ThrowIfNotOk($"Setting display mode");
-    }
-
-
-
-}
-
-class Whistle
-{
-    public int Channel { get; set; }
-    public string DeviceSerial { get; set; }
-    public int Duration { get; set; }
-    public int Status { get; set; }
-    public int Volume { get; set; }
 }
 
 public class Token
