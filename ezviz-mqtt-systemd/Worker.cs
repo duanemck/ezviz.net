@@ -1,11 +1,10 @@
+using ezviz_mqtt;
 using Microsoft.Extensions.Hosting.Systemd;
 
 namespace ezviz_systemd.net
 {
     public class Worker : BackgroundService
     {
-
-
         private readonly ILogger<Worker> _logger;
         private readonly IMqttPublisher publisher;
 

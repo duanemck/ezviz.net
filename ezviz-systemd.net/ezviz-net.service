@@ -1,9 +1,0 @@
-﻿[Unit]
-Description=ezviz.net service
-
-[Service]
-Type=notify
-ExecStart=/usr/sbin/ezviz-net
-
-[Install]
-WantedBy=multi-user.target

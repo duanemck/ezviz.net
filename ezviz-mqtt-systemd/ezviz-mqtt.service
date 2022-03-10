@@ -1,0 +1,10 @@
+﻿[Unit]
+Description=ezviz-mqtt service
+
+[Service]
+Type=notify
+ExecStart=/usr/sbin/ezviz-mqtt
+WorkingDirectory=__WORKING_DIR__
+
+[Install]
+WantedBy=multi-user.target

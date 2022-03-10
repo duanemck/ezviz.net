@@ -2,9 +2,7 @@
 using ezviz.net.domain.deviceInfo;
 using ezviz.net.exceptions;
 using ezviz.net.util;
-using Microsoft.IdentityModel.Tokens;
 using Refit;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -113,8 +111,17 @@ public class EzvizClient
 
     void DecodeToken(LoginSession session)
     {
-        var token = new JwtSecurityTokenHandler().ReadJwtToken(session.SessionId);
-        session.SessionExpiry = token.ValidTo;
+        var claimsAsBase64 = session.SessionId.Split(".")[1].Replace("-","+").Replace("_", "/");
+        while (claimsAsBase64.Length % 4 != 0)
+        {
+            claimsAsBase64 += "=";
+        }
+        string claimsAsJson = Encoding.UTF8.GetString(Convert.FromBase64String(claimsAsBase64));
+#pragma warning disable IL2026
+        var token = JsonSerializer.Deserialize<Token>(claimsAsJson);
+#pragma warning restore IL2026
+        var timestamp = token?.exp ?? 0;
+        session.SessionExpiry = DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;        
     }
 
     public async Task<IEnumerable<Camera>> GetCameras(CancellationToken stoppingToken)
@@ -362,4 +369,9 @@ class Whistle
     public int Duration { get; set; }
     public int Status { get; set; }
     public int Volume { get; set; }
+}
+
+public class Token
+{
+    public long exp { get; set; }
 }
