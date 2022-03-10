@@ -2,7 +2,10 @@
 using ezviz.net.domain.deviceInfo;
 using ezviz.net.exceptions;
 using ezviz.net.util;
+using Microsoft.IdentityModel.Tokens;
 using Refit;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -46,21 +49,23 @@ public class EzvizClient
         }
     }
 
-    private string CurrentSessionId
+    private async Task<string> GetSessionId()
     {
-        get
+
+        if (session == null)
         {
-            if (session == null)
-            {
-                throw new EzvizNetException("Not logged in to Ezviz API");
-            }
-            return session.SessionId;
+            throw new EzvizNetException("Not logged in to Ezviz API");
         }
+        if (session.SessionExpiry <= DateTime.UtcNow - TimeSpan.FromMinutes(10))
+        {
+            await Login();
+        }
+        return session.SessionId;
+
     }
 
     public async Task<EzvizUser> Login()
     {
-
         var payload = new Dictionary<string, object>()
         {
             { "account", username },
@@ -84,6 +89,7 @@ public class EzvizClient
         if (response.Meta.Code == Meta.RESPONSE_CODE_OK)
         {
             session = response.LoginSession;
+            DecodeToken(session);
             apiDetails = response.LoginArea;
             user = response.LoginUser;
             api = RestService.For<IEzvizApi>($"https://{apiDetails.ApiDomain}");
@@ -105,11 +111,15 @@ public class EzvizClient
 
     }
 
-
+    void DecodeToken(LoginSession session)
+    {
+        var token = new JwtSecurityTokenHandler().ReadJwtToken(session.SessionId);
+        session.SessionExpiry = token.ValidTo;
+    }
 
     public async Task<IEnumerable<Camera>> GetCameras(CancellationToken stoppingToken)
     {
-        var response = await api.GetPagedList(CurrentSessionId, "CLOUD, TIME_PLAN, CONNECTION, SWITCH,STATUS," +
+        var response = await api.GetPagedList(await GetSessionId(), "CLOUD, TIME_PLAN, CONNECTION, SWITCH,STATUS," +
                                                                     "WIFI, NODISTURB, KMS,P2P, TIME_PLAN," +
                                                                     "CHANNEL, VTM,DETECTOR, FEATURE, CUSTOM_TAG, " +
                                                                     "UPGRADE,VIDEO_QUALITY, QOS, PRODUCTS_INFO, FEATURE_INFO", stoppingToken);
@@ -126,20 +136,20 @@ public class EzvizClient
             { "groupId", -1 },
             { "mode", (int)mode }
         };
-        var response = await api.SetDefenceMode(CurrentSessionId, payload);
+        var response = await api.SetDefenceMode(await GetSessionId(), payload);
         response.Meta.ThrowIfNotOk("Could not set Defence Mode");
     }
 
     public async Task<DefenceMode> GetDefenceMode()
     {
-        var response = await api.GetDefenceMode(CurrentSessionId);
+        var response = await api.GetDefenceMode(await GetSessionId());
         response.Meta.ThrowIfNotOk("Could not get Defence Mode");
         return EnumX.ToObject<DefenceMode>(int.Parse(response.Mode));
     }
 
     private async Task<SystemConfigInfo> GetSystemConfig()
     {
-        var response = await api.GetServiceUrls(CurrentSessionId);
+        var response = await api.GetServiceUrls(await GetSessionId());
         response.Meta.ThrowIfNotOk("Could not get API service information");
         return response.SystemConfigInfo;
     }
@@ -151,7 +161,7 @@ public class EzvizClient
             throw new ArgumentNullException(nameof(serialNumber));
         }
         var payload = new Dictionary<string, object>() { { "subSerial", serialNumber } };
-        var response = await api.GetDetectionSensitivity(CurrentSessionId, payload);
+        var response = await api.GetDetectionSensitivity(await GetSessionId(), payload);
         if (response.ResultCode != "0")
         {
             return null;
@@ -165,7 +175,7 @@ public class EzvizClient
         {
             throw new ArgumentNullException(nameof(serialNumber));
         }
-        var response = await api.SetDetectionSensitivity(CurrentSessionId, serialNumber, 1, type, (int)level);
+        var response = await api.SetDetectionSensitivity(await GetSessionId(), serialNumber, 1, type, (int)level);
         response.Meta.ThrowIfNotOk("Setting device sensitivity");
     }
 
@@ -181,7 +191,7 @@ public class EzvizClient
             { "voiceId" , "0" },
             { "deviceSerial", serialNumber }
         };
-        var response = await api.SetAlarmSoundLevel(CurrentSessionId, serialNumber, payload);
+        var response = await api.SetAlarmSoundLevel(await GetSessionId(), serialNumber, payload);
         if (!response.IsSuccessStatusCode)
         {
             throw new EzvizNetException($"Unable to update the sound level. [{response.StatusCode}][{response.ReasonPhrase}]", response.Error);
@@ -200,7 +210,7 @@ public class EzvizClient
             { "limit", 10 },
             { "stype", -1 }
         };
-        var response = await api.GetAlarmInformation(CurrentSessionId, query);
+        var response = await api.GetAlarmInformation(await GetSessionId(), query);
         response.Meta.ThrowIfNotOk("Querying alarms");
 
         return response.Alarms;
@@ -219,7 +229,7 @@ public class EzvizClient
             { "type", (int)@switch }
 
         };
-        var response = await api.ChangeSwitch(CurrentSessionId, serialNumber, @switch, payload);
+        var response = await api.ChangeSwitch(await GetSessionId(), serialNumber, @switch, payload);
         response.Meta.ThrowIfNotOk($"Changing switch {@switch} to {enable}");
     }
 
@@ -235,7 +245,7 @@ public class EzvizClient
             { "actor", "V" }
 
         };
-        var response = await api.ChangeCameraArmedStatus(CurrentSessionId, serialNumber, 0, payload);
+        var response = await api.ChangeCameraArmedStatus(await GetSessionId(), serialNumber, 0, payload);
         response.Meta.ThrowIfNotOk($"Setting camera armed to {armed}");
     }
 
@@ -246,15 +256,16 @@ public class EzvizClient
             throw new ArgumentNullException(nameof(serialNumber));
         }
 
-        var response = await api.GetDeviceConfig(CurrentSessionId, serialNumber, 1, "Alarm_DetectHumanCar");
+        var response = await api.GetDeviceConfig(await GetSessionId(), serialNumber, 1, "Alarm_DetectHumanCar");
         response.Meta.ThrowIfNotOk($"Getting alarm detection method");
-
-        var parsedResponse = JsonSerializer.Deserialize<IDictionary<string, object>>(response.ValueInfo);
+#pragma warning disable IL2026
+        var parsedResponse = JsonSerializer.Deserialize<IDictionary<string, JsonElement>>(response.ValueInfo);
+#pragma warning restore IL2026
         if (parsedResponse == null)
         {
             throw new EzvizNetException($"Could not parse device config response {response.ValueInfo}");
         }
-        return EnumX.ToObject<AlarmDetectionMethod>((int)parsedResponse["type"]);
+        return EnumX.ToObject<AlarmDetectionMethod>(parsedResponse["type"].GetInt32());
     }
 
     internal async Task<DisplayMode> GetImageDisplayMode(string? serialNumber)
@@ -264,15 +275,17 @@ public class EzvizClient
             throw new ArgumentNullException(nameof(serialNumber));
         }
 
-        var response = await api.GetDeviceConfig(CurrentSessionId, serialNumber, 1, "display_mode");
+        var response = await api.GetDeviceConfig(await GetSessionId(), serialNumber, 1, "display_mode");
         response.Meta.ThrowIfNotOk($"Getting image display method");
 
-        var parsedResponse = JsonSerializer.Deserialize<IDictionary<string, object>>(response.ValueInfo);
+#pragma warning disable IL2026
+        var parsedResponse = JsonSerializer.Deserialize<IDictionary<string, JsonElement>>(response.ValueInfo);
+#pragma warning restore IL2026
         if (parsedResponse == null)
         {
             throw new EzvizNetException($"Could not parse device config response {response.ValueInfo}");
         }
-        return EnumX.ToObject<DisplayMode>((int)parsedResponse["mode"]);
+        return EnumX.ToObject<DisplayMode>(parsedResponse["mode"].GetInt32());
     }
 
     internal async Task SetAlarmDetectionMethod(string? serialNumber, AlarmDetectionMethod method)
@@ -281,17 +294,18 @@ public class EzvizClient
         {
             throw new ArgumentNullException(nameof(serialNumber));
         }
-
+#pragma warning disable IL2026
         var value = JsonSerializer.Serialize(new Dictionary<string, object>()
         {
             {"type", (int)method }
         });
+#pragma warning restore IL2026
 
         var payload = new Dictionary<string, object>() {
             { "key", "Alarm_DetectHumanCar" },
             { "value", value}
         };
-        var response = await api.SetDeviceConfig(CurrentSessionId, serialNumber, 0, payload);
+        var response = await api.SetDeviceConfig(await GetSessionId(), serialNumber, 0, payload);
         response.Meta.ThrowIfNotOk($"Setting alarm detection method");
     }
 
@@ -301,17 +315,17 @@ public class EzvizClient
         {
             throw new ArgumentNullException(nameof(serialNumber));
         }
-
+#pragma warning disable IL2026
         var value = JsonSerializer.Serialize(new Dictionary<string, object>()
         {
             {"mode", (int)method }
         });
-
+#pragma warning restore IL2026
         var payload = new Dictionary<string, object>() {
             { "key", "display_mode" },
             { "value", value}
         };
-        var response = await api.SetDeviceConfig(CurrentSessionId, serialNumber, 0, payload);
+        var response = await api.SetDeviceConfig(await GetSessionId(), serialNumber, 0, payload);
         response.Meta.ThrowIfNotOk($"Setting display mode");
     }
 
@@ -333,7 +347,7 @@ public class EzvizClient
                                        } }
              }
         };
-        var response = await api.SetChannelWhistle(CurrentSessionId, serialNumber, payload);
+        var response = await api.SetChannelWhistle(await GetSessionId(), serialNumber, payload);
         response.Meta.ThrowIfNotOk($"Setting display mode");
     }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ezviz.net.domain;
@@ -35,4 +36,6 @@ internal class LoginSession
 {
     public string SessionId { get; set; } = null!;
     public string RfSessionId { get; set; } = null!;
+    [JsonIgnore]
+    public DateTime SessionExpiry { get; set; }
 }
