@@ -110,7 +110,7 @@ public class EzvizClient
 
     void DecodeToken(LoginSession session)
     {
-        var claimsAsBase64 = session.SessionId.Split(".")[1].Replace("-","+").Replace("_", "/");
+        var claimsAsBase64 = session.SessionId.Split(".")[1].Replace("-", "+").Replace("_", "/");
         while (claimsAsBase64.Length % 4 != 0)
         {
             claimsAsBase64 += "=";
@@ -120,7 +120,7 @@ public class EzvizClient
         var token = JsonSerializer.Deserialize<Token>(claimsAsJson);
 #pragma warning restore IL2026
         var timestamp = token?.exp ?? 0;
-        session.SessionExpiry = DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;        
+        session.SessionExpiry = DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
     }
 
     public async Task<IEnumerable<Camera>> GetCameras(CancellationToken stoppingToken)
@@ -339,6 +339,16 @@ public class EzvizClient
         };
         var response = await api.SetDeviceConfig(await GetSessionId(), serialNumber, 0, payload);
         response.Meta.ThrowIfNotOk($"Setting display mode");
+    }
+
+    internal async Task SendAlarm(string? serialNumber, bool alarmOn)
+    {
+        if (serialNumber == null)
+        {
+            throw new ArgumentNullException(nameof(serialNumber));
+        }
+        var response = await api.SendAlarm(await GetSessionId(), serialNumber, 1, alarmOn ? 2 : 1);
+        response.Meta.ThrowIfNotOk($"Sending Alarm");
     }
 }
 

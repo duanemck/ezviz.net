@@ -394,5 +394,15 @@ namespace ezviz.net.domain
                  GetImageDisplayMode()
             });
         }
+
+        public async Task TriggerAlarm()
+        {
+            await client.SendAlarm(SerialNumber, true);
+        }
+
+        public async Task StopAlarm()
+        {
+            await client.SendAlarm(SerialNumber, false);
+        }
     }
 }

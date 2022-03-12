@@ -67,10 +67,8 @@ internal interface IEzvizApi
     [Post("/v3/devices/{deviceSerial}/alarm/setChannelWhistle")]
     Task<GenericResponse> SetChannelWhistle([Header("sessionId")] string sessionId, string deviceSerial,
         [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+
+    [Put("/v3/devices/{deviceSerial}/{channel}/sendAlarm")]
+    Task<GenericResponse> SendAlarm([Header("sessionId")] string sessionId, string deviceSerial, int channel, int enable);
 }
 
-/*
- * Possible other API calls (from DeviceApi.java)
- * 
- *     @GET("v3/userdevices/v1/devices/status")
-    EzvizCall<DevicesStatusResp> getDevicesStatus(@Query("deviceSerials") String str);*/
