@@ -53,15 +53,36 @@ internal class MqttPublisher : IMqttPublisher
         };
     }
 
+    private int InitRetries = 0;
+    private int MaxInitRetries = 3;
+
     public async Task Init()
     {
-        ConnectToMqtt();
-        if (string.IsNullOrEmpty(ezvizConfig?.Username) || string.IsNullOrEmpty(ezvizConfig?.Username))
+        try
         {
-            throw new EzvizNetException("Please provide an ezviz username and password");
+            ConnectToMqtt();
+            if (string.IsNullOrEmpty(ezvizConfig?.Username) || string.IsNullOrEmpty(ezvizConfig?.Username))
+            {
+                throw new EzvizNetException("Please provide an ezviz username and password");
+            }
+            logger.LogInformation("Logging in to ezviz API as {0}", ezvizConfig.Username);
+            await ezvizClient.Login();
         }
-        logger.LogInformation("Logging in to ezviz API as {0}", ezvizConfig.Username);
-        await ezvizClient.Login();
+        catch (Exception ex)
+        {
+            logger.LogError($"Could not initialize MQTT publisher [{ex.Message}]");
+            if (InitRetries < MaxInitRetries)
+            {
+                logger.LogError($"Could not initialize MQTT publisher [{ex.Message}]");
+                InitRetries++;
+                await Task.Delay(60000);
+                await Init();
+            }
+            else
+            {
+                throw new EzvizNetException("Max retries exceeded, giving up");
+            }
+        }
     }
 
     private void SendMqtt(string topicKey, string? serial, object data, bool jsonSerialize = true)
@@ -126,20 +147,26 @@ internal class MqttPublisher : IMqttPublisher
     private async Task PollAlarms(CancellationToken stoppingToken)
     {
         logger.LogInformation("Polling ezviz API for full recent alarms");
-        foreach (var camera in cameras)
+        foreach (var camera in cameras.Where(c => c.Online ?? false))
         {
             if (stoppingToken.IsCancellationRequested)
             {
                 return;
             }
-            logger.LogInformation($"Checking [{camera.Name}] for alarms");
-
-            var alarms = (await camera.GetAlarms()).Where(a => (DateTime.Now - a.AlarmStartTimeParsed).TotalSeconds <= 300);
-            if (alarms.Any())
+            try
             {
-                SendMqtt("alarm", camera.SerialNumber, alarms);
-            }
+                logger.LogInformation($"Checking [{camera.Name}] for alarms");
 
+                var alarms = (await camera.GetAlarms()).Where(a => (DateTime.Now - a.AlarmStartTimeParsed).TotalSeconds <= 300);
+                if (alarms.Any())
+                {
+                    SendMqtt("alarm", camera.SerialNumber, alarms);
+                }
+            }
+            catch
+            {
+                //Do nothing here but let loop continue in case a camera fails 
+            }
 
         }
         logger.LogInformation("Polling alarms done");
@@ -172,7 +199,7 @@ internal class MqttPublisher : IMqttPublisher
 
     public void Dispose()
     {
-        if (mqttClient != null)
+        if (mqttClient != null && mqttClient.IsConnected)
         {
             mqttClient.Disconnect();
         }

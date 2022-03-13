@@ -7,11 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz.net", "ezviz.net\ezvi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz-mqtt-systemd", "ezviz-mqtt-systemd\ezviz-mqtt-systemd.csproj", "{5469945E-D921-4BA9-9883-A7144D50708E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ezviz-mqtt", "ezviz-mqtt\ezviz-mqtt.csproj", "{03D43C91-540C-4F5C-BB9E-3A0D8BBF0711}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz-mqtt", "ezviz-mqtt\ezviz-mqtt.csproj", "{03D43C91-540C-4F5C-BB9E-3A0D8BBF0711}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ezviz-mqtt-windows-service", "ezviz-mqtt-windows-service\ezviz-mqtt-windows-service.csproj", "{252738D6-4D02-4291-B265-D2CF1431AD1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz-mqtt-windows-service", "ezviz-mqtt-windows-service\ezviz-mqtt-windows-service.csproj", "{252738D6-4D02-4291-B265-D2CF1431AD1F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "settings", "settings", "{4528D82A-1AA2-4B28-80EE-43D56B6DA5D1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ezviz-cli", "ezviz-cli\ezviz-cli.csproj", "{27D3E0BF-245A-4299-A58E-1A14E0F9E9B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +35,10 @@ Global
 		{252738D6-4D02-4291-B265-D2CF1431AD1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{252738D6-4D02-4291-B265-D2CF1431AD1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{252738D6-4D02-4291-B265-D2CF1431AD1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27D3E0BF-245A-4299-A58E-1A14E0F9E9B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27D3E0BF-245A-4299-A58E-1A14E0F9E9B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27D3E0BF-245A-4299-A58E-1A14E0F9E9B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27D3E0BF-245A-4299-A58E-1A14E0F9E9B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
