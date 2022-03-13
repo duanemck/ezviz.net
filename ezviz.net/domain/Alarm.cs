@@ -48,5 +48,7 @@ public class Alarm
     public bool HasValueAddedService { get; set; }
     public string ShowHumanName { get; set; } = null!;
 
+    public string? DownloadedPicture { get; set; } = null!;
+
 }
 

@@ -28,6 +28,8 @@ internal class MqttPublisher : IMqttPublisher
 
     private IEnumerable<Camera> cameras = new List<Camera>();
 
+    private IList<string> ReportedAlarms = new List<string>();
+
     public MqttPublisher(
         ILogger<MqttPublisher> logger,
         IOptions<EzvizOptions> ezvizOptions,
@@ -157,10 +159,22 @@ internal class MqttPublisher : IMqttPublisher
             {
                 logger.LogInformation($"Checking [{camera.Name}] for alarms");
 
-                var alarms = (await camera.GetAlarms()).Where(a => (DateTime.Now - a.AlarmStartTimeParsed).TotalSeconds <= 300);
-                if (alarms.Any())
+                var alarms = (await camera.GetAlarms());
+
+                foreach (var alarm in alarms)
                 {
-                    SendMqtt("alarm", camera.SerialNumber, alarms);
+                    if ((DateTime.Now - alarm.AlarmStartTimeParsed).TotalSeconds <= (pollingConfig.Alarms * 60))
+                    {
+                        if (!ReportedAlarms.Contains(alarm.AlarmId))
+                        {
+                            alarm.DownloadedPicture = await ezvizClient.GetAlarmImageBase64(alarm);
+                            SendMqtt("alarm", camera.SerialNumber, alarm);
+                            ReportedAlarms.Add(alarm.AlarmId);
+                        }                        
+                    } else if (ReportedAlarms.Contains(alarm.AlarmId))
+                    {
+                        ReportedAlarms.Remove(alarm.AlarmId);
+                    }
                 }
             }
             catch
@@ -172,7 +186,7 @@ internal class MqttPublisher : IMqttPublisher
         logger.LogInformation("Polling alarms done");
     }
 
-    void ConnectToMqtt()
+    private void ConnectToMqtt()
     {
         logger.LogInformation("Connecting to MQTT {0}", mqttConfig.Host);
         mqttClient.MqttMsgPublishReceived += MessageReceived;
@@ -191,7 +205,7 @@ internal class MqttPublisher : IMqttPublisher
         mqttClient.Subscribe(new[] { commandTopic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
     }
 
-    void MessageReceived(object sender, MqttMsgPublishEventArgs e)
+    private void MessageReceived(object sender, MqttMsgPublishEventArgs e)
     {
         string utfString = Encoding.UTF8.GetString(e.Message, 0, e.Message.Length);
         logger.LogInformation($"Received message via MQTT from [{e.Topic}] => {utfString}");

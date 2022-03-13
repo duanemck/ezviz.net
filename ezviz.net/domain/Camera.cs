@@ -284,7 +284,7 @@ namespace ezviz.net.domain
         /// <returns></returns>
         public async Task<ICollection<Alarm>> GetAlarms()
         {
-            return await client.GetAlarms(SerialNumber);
+            return await client.GetAlarms(SerialNumber, false);
         }
 
         internal async Task ToggleSwitch(SwitchType type, bool enabled)

@@ -46,6 +46,6 @@ namespace ezviz.net
             return Session.SessionId;
         }
 
-        public Func<Task> Login { private get; set; }
+        public Func<Task> Login { private get; set; } = null!;
     }
 }
