@@ -103,6 +103,12 @@ internal class MqttPublisher : IMqttPublisher
 #pragma warning restore IL2026
         if (dataString != null)
         {
+            var message = dataString.Substring(0, dataString.Length < 50 ? dataString.Length : 50);
+            if (message.Length < dataString.Length)
+            {
+                message += "...";
+            }
+            logger.LogDebug($"Publishing [{message}] to [{topic}]");
             mqttClient.Publish(topic, Encoding.UTF8.GetBytes(dataString), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, retain);
         }
     }
