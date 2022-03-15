@@ -3,5 +3,6 @@ internal class PollingOptions
 {
     public int Cameras { get; set; }
     public int Alarms { get; set; }
+    public int AlarmStaleAgeMinutes { get; set; }
 }
 

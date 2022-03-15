@@ -24,17 +24,17 @@ namespace ezviz.net.domain
         /// <summary>
         /// ezviz assigned unique serial number
         /// </summary>
-        public string? SerialNumber => DeviceInfo?.DeviceSerial;
+        public string SerialNumber => DeviceInfo.DeviceSerial;
 
         /// <summary>
         /// User defined camera name
         /// </summary>
-        public string? Name => DeviceInfo?.Name;
+        public string Name => DeviceInfo.Name;
 
         /// <summary>
         /// ezviz model name
         /// </summary>
-        public string? DeviceType => $"{DeviceInfo?.DeviceCategory} {DeviceInfo?.DeviceSubCategory}";
+        public string DeviceType => $"{DeviceInfo.DeviceCategory} {DeviceInfo.DeviceSubCategory}";
 
         /// <summary>
         /// IP on the user's local network

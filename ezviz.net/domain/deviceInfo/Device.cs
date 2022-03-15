@@ -48,7 +48,7 @@ public class Device
         return result;
     }
 
-    public EzvizDeviceInfo DeviceInfo { get; set; } = null!;
+    public EzvizDeviceInfo DeviceInfo { get; set; }
     public EzvizResourceInfo ResourceInfo { get; set; } = null!;
     public ICollection<Switch> Switches { get; set; } = null!;
     public Wifi Wifi { get; set; } = null!;

@@ -50,5 +50,8 @@ public class Alarm
 
     public string? DownloadedPicture { get; set; } = null!;
 
+    public bool IsOlderThan(int minutes) => (DateTime.Now - AlarmStartTimeParsed).TotalSeconds > (minutes * 60);
+    public bool IsEarlierThan(int minutes) => !IsOlderThan(minutes);
+
 }
 
