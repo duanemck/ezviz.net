@@ -9,6 +9,10 @@ internal class MqttOptions
 
     public int ConnectRetryDelaySeconds { get; set; }
 
+    public string ServiceLwtTopic { get; set; } = null!;
+    public string ServiceLwtOfflineMessage { get; set; } = null!;
+    public string ServiceLwtOnlineMessage { get; set; } = null!;
+
     public IDictionary<string, string> Topics { get; set; } = null!;
 }
 

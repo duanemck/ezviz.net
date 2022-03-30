@@ -50,7 +50,7 @@ internal interface IEzvizApi
     Task <SetDefenceModeResponse> SetDefenceMode(
         [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
 
-    [Post("/v3/userdevices/v1/group/defenceMode?groupId=-1")]
+    [Get("/v3/userdevices/v1/group/defenceMode?groupId=-1")]
     Task<GetDefenceModeResponse> GetDefenceMode();
 
     [Put("/v3/devices/{deviceSerial}/{channel}/changeDefenceStatusReq")]
