@@ -8,12 +8,35 @@
 		<TrimMode>Link</TrimMode>
 
 		<PackageId>ezviz.net</PackageId>
-		<Version>1.0.0</Version>
+		<Version>1.0.4</Version>
 		<Authors>Duane McKibbin</Authors>
 		<Company>duanemckdev</Company>
+		<UserSecretsId>fc1b05fe-ca4c-41c6-a616-8e0a01973328</UserSecretsId>
+
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/duanemck/ezviz.net</PackageProjectUrl>
+		<Description>
+			.net library for interacting with the ezviz cctv camera API
+			Based on https://github.com/BaQs/pyEzviz
+			
+			See https://github.com/duanemck/ezviz.net for more details and an MQTT service that uses this library for home automation integration
+		</Description>
+		<PackageReleaseNotes>
+			1.0.0
+			Support for querying a list of cameras
+			Setting Defence Mode
+			Arming/Disarming each camera
+			Setting other properties of cameras
+			
+			Note: Does not currently work if the ezviz user has two factor authentication enabled
+		</PackageReleaseNotes>
+		<PackageTags>ezviz;security;cameras;cctv</PackageTags>
+		<RepositoryType>Github</RepositoryType>
+		<RepositoryUrl>https://github.com/duanemck/ezviz.net</RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
 		<PackageReference Include="Refit" Version="6.3.2" />
 		<PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
 	</ItemGroup>
