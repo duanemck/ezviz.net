@@ -6,6 +6,11 @@
 		<Nullable>enable</Nullable>
 		<PublishTrimmed>true</PublishTrimmed>
 		<TrimMode>Link</TrimMode>
+
+		<PackageId>ezviz.net</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>Duane McKibbin</Authors>
+		<Company>duanemckdev</Company>
 	</PropertyGroup>
 
 	<ItemGroup>
