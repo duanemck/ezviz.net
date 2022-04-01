@@ -133,7 +133,7 @@ public class EzvizClient
         session.SessionExpiry = DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
     }
 
-    public async Task<IEnumerable<Camera>> GetCameras(CancellationToken stoppingToken)
+    public async Task<IEnumerable<Camera>> GetCameras(CancellationToken stoppingToken = default)
     {
         var response = await api.GetPagedList("CLOUD, TIME_PLAN, CONNECTION, SWITCH,STATUS," +
                                                                     "WIFI, NODISTURB, KMS,P2P, TIME_PLAN," +

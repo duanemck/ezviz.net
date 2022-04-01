@@ -1,3 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
-//TODO
+﻿using ezviz_cli.Commands;
+using System.CommandLine;
+
+var rootCommand = new RootCommand("ezviz.net CLI");
+
+rootCommand.AddCommand(new GetAllCamerasCommand());
+rootCommand.AddCommand(new GetCameraDetailCommand());
+
+return await rootCommand.InvokeAsync(args);

@@ -404,5 +404,10 @@ namespace ezviz.net.domain
         {
             await client.SendAlarm(SerialNumber, false);
         }
+
+        public override string ToString()
+        {
+            return $"{Name} ({SerialNumber})";
+        }
     }
 }
