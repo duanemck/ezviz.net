@@ -1,2 +1,3 @@
 # ezviz.net
-Experimental .net library for interacting with the Ezviz API. Based on the excellent work in https://github.com/BaQs/pyEzviz
+
+See the project [wiki](https://github.com/duanemck/ezviz.net/wiki)
