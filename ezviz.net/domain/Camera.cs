@@ -146,7 +146,7 @@ namespace ezviz.net.domain
         /// <summary>
         /// Sensitivty of motion detection
         /// </summary>
-        public DetectionSensitivityLevel DetectionSensitivity { get; set; }
+        public DetectionSensitivityLevel DetectionSensitivity { get; private set; }
 
         /// <summary>
         /// Camera is online with the ezviz API
@@ -169,12 +169,12 @@ namespace ezviz.net.domain
         /// <summary>
         /// Motion detection method (human/vehicle/both/regular motion)
         /// </summary>
-        public AlarmDetectionMethod AlarmDetectionMethod { get; set; }
+        public AlarmDetectionMethod AlarmDetectionMethod { get; private set; }
         
         /// <summary>
         /// Image filters being applied
         /// </summary>
-        public DisplayMode ImageDisplayMode { get; set; }
+        public DisplayMode ImageDisplayMode { get; private set; }
 
         /// <summary>
         /// Most recent alarm raised on this camera
@@ -395,11 +395,17 @@ namespace ezviz.net.domain
             });
         }
 
+        /// <summary>
+        /// Make the alarm siren sound and the light flash
+        /// </summary>
         public async Task TriggerAlarm()
         {
             await client.SendAlarm(SerialNumber, true);
         }
 
+        /// <summary>
+        /// Stop an alarming camera
+        /// </summary>
         public async Task StopAlarm()
         {
             await client.SendAlarm(SerialNumber, false);

@@ -1,13 +1,18 @@
 ﻿using ezviz_mqtt.config;
+using ezviz_mqtt.health;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace ezviz_mqtt
 {
     public static class ServiceRegistrationExtensions
     {
-        public static IServiceCollection AddMqttPublisher(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddMqttPublisher<T>(this IServiceCollection services, IConfiguration configuration) where T: BackgroundService
         {
+            services.AddHostedService<T>();
+            services.AddOptions();
+
 #pragma warning disable IL2026
             services.Configure<EzvizOptions>(configuration.GetSection("ezviz"));
             services.Configure<MqttOptions>(configuration.GetSection("mqtt"));
@@ -15,6 +20,8 @@ namespace ezviz_mqtt
             services.Configure<PollingOptions>(configuration.GetSection("polling"));
 #pragma warning restore IL2026
             services.AddSingleton<IMqttPublisher, MqttPublisher>();
+
+            services.AddHealthCheck(configuration);
             return services;
         }
     }

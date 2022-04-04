@@ -2,6 +2,7 @@
 using ezviz.net.domain;
 using ezviz.net.exceptions;
 using ezviz_mqtt.config;
+using ezviz_mqtt.health;
 using ezviz_mqtt.util;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,6 +16,7 @@ namespace ezviz_mqtt;
 internal class MqttPublisher : IMqttPublisher
 {
     private readonly ILogger<MqttPublisher> logger;
+    private readonly MqttServiceState serviceState;
     private readonly EzvizOptions ezvizConfig;
     private readonly MqttOptions mqttConfig;
     private readonly JsonOptions jsonConfig;
@@ -36,9 +38,11 @@ internal class MqttPublisher : IMqttPublisher
         IOptions<EzvizOptions> ezvizOptions,
         IOptions<MqttOptions> mqttOptions,
         IOptions<JsonOptions> jsonOptions,
-        IOptions<PollingOptions> pollingOptions)
+        IOptions<PollingOptions> pollingOptions,
+        MqttServiceState serviceState)
     {
         this.logger = logger;
+        this.serviceState = serviceState;
         ezvizConfig = ezvizOptions.Value;
         mqttConfig = mqttOptions.Value;
         jsonConfig = jsonOptions.Value;
@@ -133,6 +137,8 @@ internal class MqttPublisher : IMqttPublisher
 
     public async Task PublishAsync(CancellationToken stoppingToken)
     {
+        serviceState.MqttConnected = mqttClient.IsConnected;
+
         var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
         var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
         try
@@ -142,18 +148,22 @@ internal class MqttPublisher : IMqttPublisher
             {
                 await PollCameras(stoppingToken);
                 LastFullPoll = DateTime.Now;
+                serviceState.LastStatusCheck = LastFullPoll;
             }
 
             if (timeSinceLastAlarmPoll.TotalMinutes >= pollingConfig.Alarms)
             {
                 await PollAlarms(stoppingToken);
                 LastAlarmPoll = DateTime.Now;
+                serviceState.LastAlarmCheck = LastAlarmPoll;
             }
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to poll ezviz API");
             LastFullPoll = LastAlarmPoll = DateTime.Now;
+            serviceState.MostRecentError = ex.Message;
+            serviceState.MostRecentErrorTime = DateTime.Now;
         }
     }
 
@@ -253,6 +263,8 @@ internal class MqttPublisher : IMqttPublisher
         commandTopic = mqttConfig.Topics["globalCommand"];
         logger.LogInformation("Subscribing to {0}", commandTopic);
         mqttClient.Subscribe(new[] { commandTopic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+
+        serviceState.MqttConnected = true;
 
     }
 

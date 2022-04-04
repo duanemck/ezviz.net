@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
     <PackageReference Include="System.Text.Json" Version="7.0.0-preview.1.22076.8" />
+    <PackageReference Include="TinyHealthCheck" Version="0.0.15" />
   </ItemGroup>
 
   <ItemGroup>

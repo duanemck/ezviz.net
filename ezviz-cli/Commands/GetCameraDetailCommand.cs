@@ -68,20 +68,21 @@ internal class GetCameraDetailCommand : AuthenticatedCommand
 
 
         var doc = new Document(
+            new Span("Name") ,
+                    new Span("Serial"),
             new Grid
             {
                 Color = Gray,
                 Columns = {GridLength.Auto, GridLength.Auto, GridLength.Auto},
                 Children =
                 {
-                    new Cell("Name") {Stroke = headerThickness},
-                    new Cell("Serial") {Stroke = headerThickness},
+                    
                     new Cell("Armed") {Stroke=headerThickness},
                     new Cell(camera.Name), new Cell(camera.SerialNumber), new Cell(camera.Armed)
                 }
             }
             );
-
+        
         ConsoleRenderer.RenderDocument(doc);
 
         //Colors.WriteLine(camera.Name.Green(), camera.SerialNumber);

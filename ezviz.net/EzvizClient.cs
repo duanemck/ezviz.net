@@ -41,37 +41,6 @@ public class EzvizClient
 
     }
 
-    private HttpClient GetHttpClientWithAuth(string? baseUrl)
-    {
-        var client = new HttpClient(new SessionIdDelegatingHandler(sessionIdProvider));
-        if (baseUrl != null)
-        {
-            client.BaseAddress = new Uri($"https://{baseUrl}");
-        }
-        return client;
-    }
-
-    private IEzvizApi GetApi(string baseUrl)
-    {
-
-        return RestService.For<IEzvizApi>(GetHttpClientWithAuth(baseUrl));
-    }
-
-    private string GetPasswordHash(string plaintext)
-    {
-        using (var md5 = MD5.Create())
-        {
-            var bytes = Encoding.UTF8.GetBytes(plaintext);
-            var hashed = md5.ComputeHash(bytes);
-            return BitConverter.ToString(hashed).Replace("-", string.Empty).ToLower();
-        }
-    }
-
-    internal async Task GetNewSession()
-    {
-        await Login();
-    }
-
     public async Task<EzvizUser> Login()
     {
         var payload = new Dictionary<string, object>()
@@ -118,19 +87,16 @@ public class EzvizClient
         throw new LoginException($"Login failed, unknown response code [{response.Meta.Code}]");
     }
 
-    void DecodeToken(LoginSession session)
+    public async Task<string?> GetAlarmImageBase64(Alarm alarm)
     {
-        var claimsAsBase64 = session.SessionId.Split(".")[1].Replace("-", "+").Replace("_", "/");
-        while (claimsAsBase64.Length % 4 != 0)
+        if (!string.IsNullOrEmpty(alarm.PicUrl))
         {
-            claimsAsBase64 += "=";
+            var stream = await DownloadAuthenticatedFile(alarm.PicUrl);
+            var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            return Convert.ToBase64String(memoryStream.ToArray());
         }
-        string claimsAsJson = Encoding.UTF8.GetString(Convert.FromBase64String(claimsAsBase64));
-#pragma warning disable IL2026
-        var token = JsonSerializer.Deserialize<Token>(claimsAsJson);
-#pragma warning restore IL2026
-        var timestamp = token?.exp ?? 0;
-        session.SessionExpiry = DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
+        return null;
     }
 
     public async Task<IEnumerable<Camera>> GetCameras(CancellationToken stoppingToken = default)
@@ -174,6 +140,53 @@ public class EzvizClient
         var response = await api.GetDefenceMode();
         response.Meta.ThrowIfNotOk("Could not get Defence Mode");
         return EnumX.ToObject<DefenceMode>(int.Parse(response.Mode));
+    }
+
+
+    private HttpClient GetHttpClientWithAuth(string? baseUrl)
+    {
+        var client = new HttpClient(new SessionIdDelegatingHandler(sessionIdProvider));
+        if (baseUrl != null)
+        {
+            client.BaseAddress = new Uri($"https://{baseUrl}");
+        }
+        return client;
+    }
+
+    private IEzvizApi GetApi(string baseUrl)
+    {
+
+        return RestService.For<IEzvizApi>(GetHttpClientWithAuth(baseUrl));
+    }
+
+    private string GetPasswordHash(string plaintext)
+    {
+        using (var md5 = MD5.Create())
+        {
+            var bytes = Encoding.UTF8.GetBytes(plaintext);
+            var hashed = md5.ComputeHash(bytes);
+            return BitConverter.ToString(hashed).Replace("-", string.Empty).ToLower();
+        }
+    }
+
+    internal async Task GetNewSession()
+    {
+        await Login();
+    }
+
+    private void DecodeToken(LoginSession session)
+    {
+        var claimsAsBase64 = session.SessionId.Split(".")[1].Replace("-", "+").Replace("_", "/");
+        while (claimsAsBase64.Length % 4 != 0)
+        {
+            claimsAsBase64 += "=";
+        }
+        string claimsAsJson = Encoding.UTF8.GetString(Convert.FromBase64String(claimsAsBase64));
+#pragma warning disable IL2026
+        var token = JsonSerializer.Deserialize<Token>(claimsAsJson);
+#pragma warning restore IL2026
+        var timestamp = token?.exp ?? 0;
+        session.SessionExpiry = DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
     }
 
     private async Task<SystemConfigInfo> GetSystemConfig()
@@ -252,18 +265,6 @@ public class EzvizClient
         }
 
         return response.Alarms;
-    }
-
-    public async Task<string?> GetAlarmImageBase64(Alarm alarm)
-    {
-        if (!string.IsNullOrEmpty(alarm.PicUrl))
-        {
-            var stream = await DownloadAuthenticatedFile(alarm.PicUrl);
-            var memoryStream = new MemoryStream();
-            stream.CopyTo(memoryStream);
-            return Convert.ToBase64String(memoryStream.ToArray());
-        }
-        return null;
     }
 
     internal async Task ChangeSwitch(string? serialNumber, SwitchType @switch, bool enable)
