@@ -138,6 +138,25 @@ internal class MqttPublisher : IMqttPublisher
     public async Task PublishAsync(CancellationToken stoppingToken)
     {
         serviceState.MqttConnected = mqttClient.IsConnected;
+        int counter = 0;
+        while (!mqttClient.IsConnected && counter < mqttConfig.ConnectRetries)
+        {
+            try
+            {
+                logger.LogWarning("MQTT connection seems to be down, reconnecting");
+                ConnectToMqtt();
+            }
+            catch (Exception e)
+            {
+                logger.LogError("Could not connect to MQTT broker", e);
+                await Task.Delay(mqttConfig.ConnectRetryDelaySeconds * 1000);
+            }
+            finally
+            {
+                counter++;
+            }
+
+        }
 
         var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
         var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
