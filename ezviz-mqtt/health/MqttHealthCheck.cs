@@ -14,9 +14,12 @@ public class MqttHealthCheck : IHealthCheck
         this.serviceState = serviceState;
     }
 
-    public async Task<IHealthCheckResult> ExecuteAsync(CancellationToken cancellationToken)
+    public Task<IHealthCheckResult> ExecuteAsync(CancellationToken cancellationToken)
     {
-        return new HealthCheckResult(JsonSerializer.Serialize(serviceState), serviceState.StatusCode);        
+        var json = JsonSerializer.Serialize(serviceState);
+        serviceState.MostRecentError = null;
+        serviceState.MostRecentErrorTime = null;
+        return Task.FromResult<IHealthCheckResult>(new HealthCheckResult(json, serviceState.StatusCode));        
     }
 }
 
