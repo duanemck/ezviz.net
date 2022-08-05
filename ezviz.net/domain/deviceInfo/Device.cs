@@ -39,9 +39,7 @@ public class Device
         }
         catch (Exception e)
         {
-#pragma warning disable IL2026
-            throw new EzvizNetException($"Could not interpret camera details. [[DeviceInfo=>{JsonSerializer.Serialize(deviceInfo)}]] [[PagedResponse=>{JsonSerializer.Serialize(response)}]]", e);
-#pragma warning restore IL2026
+            throw new EzvizNetException($"Could not interpret camera details.", e);
         }
     }
 

@@ -1,17 +1,28 @@
 ﻿using ezviz.net.util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ezviz_mqtt.config;
+using Microsoft.Extensions.Options;
 
 namespace ezviz_mqtt.util
 {
     internal class FileRequestResponseLogger : IRequestResponseLogger
     {
-        public Task Log()
+        private readonly PollingOptions pollingOptions;
+
+        public FileRequestResponseLogger(IOptions<PollingOptions> pollingOptions)
         {
-            throw new NotImplementedException();
+            this.pollingOptions = pollingOptions.Value;
+        }
+
+        public async Task Log(Guid? id, string message)
+        {
+            if (string.IsNullOrEmpty(pollingOptions.RequestLogLocation))
+            {
+                return;
+            }
+            var fileName = Path.Join(pollingOptions.RequestLogLocation, $"{id.ToString()}.txt");
+            var file = File.CreateText(fileName);
+            await file.WriteLineAsync(message);
+            file.Close();                       
         }
     }
 }

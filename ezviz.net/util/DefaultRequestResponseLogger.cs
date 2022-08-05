@@ -8,9 +8,10 @@ namespace ezviz.net.util
 {
     internal class DefaultRequestResponseLogger : IRequestResponseLogger
     {
-        public Task Log()
+        public Task Log(Guid? id, string message)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"[{id}] {message}");
+            return Task.CompletedTask; 
         }
     }
 }

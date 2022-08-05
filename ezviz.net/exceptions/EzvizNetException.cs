@@ -8,14 +8,16 @@ namespace ezviz.net.exceptions
 {
     public class EzvizNetException : Exception
     {
-        public EzvizNetException(string message) : base(message)
+        public EzvizNetException(string message, Guid? id = null) : base($"[{id ?? Guid.NewGuid()}] {message}")
         {
-
+            Id = id;
         }
 
-        public EzvizNetException(string message, Exception? inner) : base(message, inner)
+        public EzvizNetException(string message, Exception? inner, Guid? id = null) : base($"[{id ?? Guid.NewGuid()}] {message}", inner)
         {
-
+            Id = id;
         }
+
+        public Guid? Id { get; }
     }
 }

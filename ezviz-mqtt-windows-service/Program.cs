@@ -1,3 +1,4 @@
+using ezviz.net.util;
 using ezviz_mqtt;
 using ezviz_windows_service;
 
@@ -10,8 +11,8 @@ await Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         services
-            .AddWindowsLogging()            
-            .AddMqttPublisher<Worker>(hostContext.Configuration);
+            .AddWindowsLogging()
+            .AddMqttPublisher<Worker>(hostContext.Configuration);            
     })
     .UseWindowsService(options =>
     {

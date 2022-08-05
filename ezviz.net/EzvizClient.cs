@@ -12,10 +12,10 @@ public class EzvizClient : IEzvizClient
 {
     private const string DEFAULT_REGION = "apiieu.ezvizlife.com";
     private readonly string[] SUPPORTED_DEVICE_CATEGORIES = new[] { "COMMON", "IPC", "BatteryCamera", "BDoorBell", "XVR", "CatEye" };
-
-    private  string? username;
-    private  string? password;
-    private  string? region;
+    private readonly IRequestResponseLogger requestLogger;
+    private string? username;
+    private string? password;
+    private string? region;
 
     private LoginArea? apiDetails;
     private LoginSession? session;
@@ -24,7 +24,12 @@ public class EzvizClient : IEzvizClient
 
     private SessionIdProvider sessionIdProvider = new SessionIdProvider();
 
-    private IEzvizApi api;
+    private IEzvizApi api = null!;
+
+    public EzvizClient(IRequestResponseLogger requestLogger)
+    {
+        this.requestLogger = requestLogger;
+    }
 
     private void CacheCredentialsAndCreateApi(string username, string password, string? region)
     {
@@ -108,8 +113,9 @@ public class EzvizClient : IEzvizClient
                                                                     "UPGRADE,VIDEO_QUALITY, QOS, PRODUCTS_INFO, FEATURE_INFO", stoppingToken);
         response.Meta.ThrowIfNotOk("Getting device list");
         var cameras = response.DeviceInfos
-            .Select(device => new Camera(device, response, this))
-            .Where(device => SUPPORTED_DEVICE_CATEGORIES.Contains(device.DeviceInfo.DeviceCategory))
+            .Select(async device => await ParseCamera(device, response))
+            .Select(device => device.Result)
+            .Where(device => device != null)
             .Cast<Camera>();
 
         foreach (var c in cameras.Where(c => c.Online ?? false))
@@ -124,6 +130,32 @@ public class EzvizClient : IEzvizClient
             }
         }
         return cameras;
+    }
+
+    private async Task<Camera?> ParseCamera(EzvizDeviceInfo deviceInfo, PagedListResponse response)
+    {
+        try
+        {
+            var device = new Camera(deviceInfo, response, this);
+            if (SUPPORTED_DEVICE_CATEGORIES.Contains(device.DeviceInfo.DeviceCategory))
+            {
+                return device;
+            }            
+        }
+        catch (EzvizNetException ex)
+        {
+            var options = new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            };
+
+#pragma warning disable IL2026
+            var log = $"[[DeviceInfo=>\n\n{ JsonSerializer.Serialize(deviceInfo, options)}\n\n]] [[PagedResponse=>\n\n{ JsonSerializer.Serialize(response, options)}\n\n]]";
+#pragma warning restore IL2026
+            await requestLogger.Log(ex.Id, log);
+            throw;
+        }
+        return null;
     }
 
     public async Task SetDefenceMode(DefenceMode mode)

@@ -23,10 +23,11 @@ namespace ezviz_mqtt
             services.Configure<PollingOptions>(configuration.GetSection("polling"));
 #pragma warning restore IL2026
             services.AddSingleton<IMqttPublisher, MqttPublisher>();
-            services.AddSingleton<IRequestResponseLogger, FileRequestResponseLogger>();
-
+            
             services.AddHealthCheck(configuration);
             services.AddEzvizService(configuration);
+
+            services.AddSingleton<IRequestResponseLogger, FileRequestResponseLogger>();
             return services;
         }
     }
