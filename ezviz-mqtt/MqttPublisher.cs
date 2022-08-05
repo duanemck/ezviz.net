@@ -67,7 +67,7 @@ internal class MqttPublisher : IMqttPublisher
         try
         {
             ConnectToMqtt();
-            if (string.IsNullOrEmpty(ezvizConfig?.Username) || string.IsNullOrEmpty(ezvizConfig?.Username))
+            if (string.IsNullOrEmpty(ezvizConfig?.Username) || string.IsNullOrEmpty(ezvizConfig?.Password))
             {
                 throw new EzvizNetException("Please provide an ezviz username and password");
             }
@@ -271,7 +271,7 @@ internal class MqttPublisher : IMqttPublisher
         logger.LogInformation("Connecting to MQTT {0}", mqttConfig.Host);
         mqttClient.MqttMsgPublishReceived += MessageReceived;
 
-        mqttClient.Connect("ezviz.net", mqttConfig.Username, mqttConfig.Password, false, MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true, mqttConfig.ServiceLwtTopic, mqttConfig.ServiceLwtOfflineMessage, false, 60);
+        mqttClient.Connect(mqttConfig.Client, mqttConfig.Username, mqttConfig.Password, false, MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true, mqttConfig.ServiceLwtTopic, mqttConfig.ServiceLwtOfflineMessage, false, 60);
         SendLwtForService(mqttConfig.ServiceLwtOnlineMessage);
 
 
