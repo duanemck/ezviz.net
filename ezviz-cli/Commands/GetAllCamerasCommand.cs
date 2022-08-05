@@ -8,17 +8,18 @@ namespace ezviz_cli.Commands;
 
 internal class GetAllCamerasCommand : AuthenticatedCommand
 {
-    public GetAllCamerasCommand() : base("cameras", "Fetch name and serial of all cameras linked to this ezviz account")
+    public GetAllCamerasCommand(IEzvizClient client) : base("cameras", "Fetch name and serial of all cameras linked to this ezviz account")
     {
         this.SetHandler(async (string username, string password) => await Handle(username, password), AllOptions.UsernameOption, AllOptions.PasswordOption);
+        this.client = client;
     }
 
     private LineThickness headerThickness = new LineThickness(LineWidth.Double, LineWidth.Single);
+    private readonly IEzvizClient client;
 
     public async Task Handle(string username, string password)
     {
-        var client = new EzvizClient(username, password);
-        await client.Login();
+        await client.Login(username, password);
         var cameras = await client.GetCameras();
 
 

@@ -8,32 +8,41 @@ public class Device
     private readonly JsonSerializerOptions deserializationOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
     internal Device(EzvizDeviceInfo deviceInfo, PagedListResponse response)
     {
-        DeviceInfo = deviceInfo;
-        var serial = deviceInfo.DeviceSerial;
-        var cloudObjectKeyValue = response.Cloud
-                                .Where(c => c.Value.GetProperty("deviceSerial").GetString() == serial)
-                                .FirstOrDefault();
-        var cloud = Deserialize<Cloud>(cloudObjectKeyValue.Value);
-        if (cloud != null)
+        try
         {
-            cloud.ResourceId = cloudObjectKeyValue.Key;
-            Cloud = cloud;
-            ResourceInfo = response.ResourceInfos.First(r => r.ResourceId == cloud.ResourceId);
-            VTM = response.VTM == null ? new VTM() : Deserialize<VTM>(response.VTM[cloud.ResourceId]);
-            Channel = response.Channel == null ? new Channel() : Deserialize<Channel>(response.Channel[cloud.ResourceId]);
-            VideoQualities = response.Video_Quality == null? new VideoQuality[0] : Deserialize<VideoQuality[]>(response.Video_Quality[cloud.ResourceId]);
+            DeviceInfo = deviceInfo;
+            var serial = deviceInfo.DeviceSerial;
+            var cloudObjectKeyValue = response.Cloud
+                                    .Where(c => c.Value.GetProperty("deviceSerial").GetString() == serial)
+                                    .FirstOrDefault();
+            var cloud = Deserialize<Cloud>(cloudObjectKeyValue.Value);
+            if (cloud != null)
+            {
+                cloud.ResourceId = cloudObjectKeyValue.Key;
+                Cloud = cloud;
+                ResourceInfo = response.ResourceInfos.First(r => r.ResourceId == cloud.ResourceId);
+                VTM = response.VTM == null ? new VTM() : Deserialize<VTM>(response.VTM[cloud.ResourceId]);
+                Channel = response.Channel == null ? new Channel() : Deserialize<Channel>(response.Channel[cloud.ResourceId]);
+                VideoQualities = response.Video_Quality == null ? new VideoQuality[0] : Deserialize<VideoQuality[]>(response.Video_Quality[cloud.ResourceId]);
+            }
+
+            P2P = Deserialize<P2PEndpoint[]>(response.P2P[serial]);
+            Connection = Deserialize<Connection>(response.Connection[serial]);
+            KMS = Deserialize<KMS>(response.KMS[serial]);
+            Status = Deserialize<Status>(response.Status[serial]);
+            TimePlans = Deserialize<TimePlan[]>(response.Time_Plan[serial]);
+            QOS = Deserialize<QOS>(response.QOS[serial]);
+            NoDisturb = Deserialize<NoDisturb>(response.NoDisturb[serial]);
+            Upgrade = Deserialize<Upgrade>(response.Upgrade[serial]);
+            Switches = Deserialize<Switch[]>(response.Switch[serial]);
+            Wifi = Deserialize<Wifi>(response.Wifi[serial]);
         }
-        
-        P2P = Deserialize<P2PEndpoint[]>(response.P2P[serial]);
-        Connection = Deserialize<Connection>(response.Connection[serial]);
-        KMS = Deserialize<KMS>(response.KMS[serial]);
-        Status = Deserialize<Status>(response.Status[serial]);
-        TimePlans = Deserialize<TimePlan[]>(response.Time_Plan[serial]);
-        QOS = Deserialize<QOS>(response.QOS[serial]);
-        NoDisturb = Deserialize<NoDisturb>(response.NoDisturb[serial]);
-        Upgrade = Deserialize<Upgrade>(response.Upgrade[serial]);
-        Switches = Deserialize<Switch[]>(response.Switch[serial]);
-        Wifi = Deserialize<Wifi>(response.Wifi[serial]);
+        catch (Exception e)
+        {
+#pragma warning disable IL2026
+            throw new EzvizNetException($"Could not interpret camera details. [[DeviceInfo=>{JsonSerializer.Serialize(deviceInfo)}]] [[PagedResponse=>{JsonSerializer.Serialize(response)}]]", e);
+#pragma warning restore IL2026
+        }
     }
 
     private T Deserialize<T>(JsonElement json)

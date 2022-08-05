@@ -22,7 +22,7 @@ internal class MqttPublisher : IMqttPublisher
     private readonly JsonOptions jsonConfig;
     private readonly PollingOptions pollingConfig;
 
-    private readonly EzvizClient ezvizClient;
+    private readonly IEzvizClient ezvizClient;
     private readonly MqttClient mqttClient;
     private readonly JsonSerializerOptions jsonSerializationOptions;
 
@@ -39,14 +39,16 @@ internal class MqttPublisher : IMqttPublisher
         IOptions<MqttOptions> mqttOptions,
         IOptions<JsonOptions> jsonOptions,
         IOptions<PollingOptions> pollingOptions,
-        MqttServiceState serviceState)
+        MqttServiceState serviceState,
+        IEzvizClient ezvizClient)
     {
         this.logger = logger;
         this.serviceState = serviceState;
         ezvizConfig = ezvizOptions.Value;
         mqttConfig = mqttOptions.Value;
         jsonConfig = jsonOptions.Value;
-        ezvizClient = new EzvizClient(ezvizConfig.Username, ezvizConfig.Password);
+        //ezvizClient = new EzvizClient(ezvizConfig.Username, ezvizConfig.Password);.
+        this.ezvizClient = ezvizClient;
         mqttClient = new MqttClient(mqttConfig.Host);
         pollingConfig = pollingOptions.Value;
 
@@ -72,7 +74,7 @@ internal class MqttPublisher : IMqttPublisher
                 throw new EzvizNetException("Please provide an ezviz username and password");
             }
             logger.LogInformation("Logging in to ezviz API as {0}", ezvizConfig.Username);
-            await ezvizClient.Login();
+            await ezvizClient.Login(ezvizConfig.Username, ezvizConfig.Password);
         }
         catch (Exception ex)
         {

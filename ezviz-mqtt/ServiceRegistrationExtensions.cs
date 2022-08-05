@@ -1,5 +1,8 @@
-﻿using ezviz_mqtt.config;
+﻿using ezviz.net.util;
+using ezviz.netmqtt;
+using ezviz_mqtt.config;
 using ezviz_mqtt.health;
+using ezviz_mqtt.util;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,8 +23,10 @@ namespace ezviz_mqtt
             services.Configure<PollingOptions>(configuration.GetSection("polling"));
 #pragma warning restore IL2026
             services.AddSingleton<IMqttPublisher, MqttPublisher>();
+            services.AddSingleton<IRequestResponseLogger, FileRequestResponseLogger>();
 
             services.AddHealthCheck(configuration);
+            services.AddEzvizService(configuration);
             return services;
         }
     }

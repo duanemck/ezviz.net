@@ -7,6 +7,7 @@ internal class Meta
     public const int RESPONSE_CODE_OK = 200;
 
     public const int RESPONSE_CODE_INCORRECT_REGION = 1100;
+    public const int RESPONSE_CODE_INVALID_VERIFICATION_CODE = 1012;
     public const int RESPONSE_CODE_INVALID_USERNAME = 1013;
     public const int RESPONSE_CODE_INVALID_PASSWORD = 1014;
     public const int RESPONSE_CODE_ACCOUNT_LOCKED = 1015;

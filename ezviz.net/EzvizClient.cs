@@ -8,14 +8,14 @@ using System.Text;
 using System.Text.Json;
 
 namespace ezviz.net;
-public class EzvizClient
+public class EzvizClient : IEzvizClient
 {
     private const string DEFAULT_REGION = "apiieu.ezvizlife.com";
     private readonly string[] SUPPORTED_DEVICE_CATEGORIES = new[] { "COMMON", "IPC", "BatteryCamera", "BDoorBell", "XVR", "CatEye" };
 
-    private readonly string username;
-    private readonly string password;
-    private readonly string region;
+    private  string? username;
+    private  string? password;
+    private  string? region;
 
     private LoginArea? apiDetails;
     private LoginSession? session;
@@ -24,29 +24,29 @@ public class EzvizClient
 
     private SessionIdProvider sessionIdProvider = new SessionIdProvider();
 
-
     private IEzvizApi api;
 
-    public EzvizClient(string username, string password) : this(username, password, null)
-    {
-    }
-
-    public EzvizClient(string username, string password, string? region)
+    private void CacheCredentialsAndCreateApi(string username, string password, string? region)
     {
         this.username = username;
         this.password = GetPasswordHash(password);
         this.region = region ?? DEFAULT_REGION;
         sessionIdProvider.Login = GetNewSession;
         api = GetApi(this.region);
-
     }
 
-    public async Task<EzvizUser> Login()
+    public async Task<EzvizUser> Login(string username, string password, string? region)
+    {
+        CacheCredentialsAndCreateApi(username, password, region);
+        return await Login();
+    }
+
+    private async Task<EzvizUser> Login()
     {
         var payload = new Dictionary<string, object>()
         {
-            { "account", username },
-            { "password", password },
+            { "account", username ?? "" },
+            { "password", password ?? "" },
             { "cuName", "SFRDIDEw" },
             { "msgType", "0" },
             { "feature_code", "1fc28fa018178a1cd1c091b13b2f9f02"}
@@ -81,6 +81,7 @@ public class EzvizClient
             case Meta.RESPONSE_CODE_ACCOUNT_LOCKED: throw new AccountLockedException();
             case Meta.RESPONSE_CODE_INVALID_USERNAME: throw new InvalidUsernameException();
             case Meta.RESPONSE_CODE_INVALID_PASSWORD: throw new InvalidPasswordException();
+            case Meta.RESPONSE_CODE_INVALID_VERIFICATION_CODE: throw new InvalidVerificationCodeException();
             case Meta.RESPONSE_CODE_MFA_ENABLED: throw new MFAEnabledException();
             case Meta.RESPONSE_CODE_INCORRECT_REGION: throw new InvalidRegionException(response.LoginArea.ApiDomain);
         }
@@ -155,7 +156,6 @@ public class EzvizClient
 
     private IEzvizApi GetApi(string baseUrl)
     {
-
         return RestService.For<IEzvizApi>(GetHttpClientWithAuth(baseUrl));
     }
 

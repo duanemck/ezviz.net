@@ -15,8 +15,9 @@ internal class GetCameraDetailCommand : AuthenticatedCommand
     {
         WriteIndented = true
     };
+    private readonly IEzvizClient client;
 
-    public GetCameraDetailCommand() : base("camera-detail", "Fetch status and config of specified camera")
+    public GetCameraDetailCommand(IEzvizClient client) : base("camera-detail", "Fetch status and config of specified camera")
     {
         AddOption(AllOptions.SerialOption);
         AddOption(AllOptions.JsonOption);
@@ -26,12 +27,12 @@ internal class GetCameraDetailCommand : AuthenticatedCommand
             AllOptions.PasswordOption,
             AllOptions.SerialOption,
             AllOptions.JsonOption);
+        this.client = client;
     }
 
     public async Task Handle(string username, string password, string serial, bool json)
     {
-        var client = new EzvizClient(username, password);
-        await client.Login();
+        await client.Login(username, password);
         var cameras = await client.GetCameras();
         var camera = cameras.FirstOrDefault(c => c.SerialNumber == serial);
 
@@ -68,17 +69,21 @@ internal class GetCameraDetailCommand : AuthenticatedCommand
 
 
         var doc = new Document(
-            new Span("Name") ,
-                    new Span("Serial"),
+            new Span($"Name:{camera.Name}") ,
+            new Span(Environment.NewLine),
+            new Span($"Serial:{camera.SerialNumber}"),
             new Grid
             {
                 Color = Gray,
-                Columns = {GridLength.Auto, GridLength.Auto, GridLength.Auto},
+                Columns = {GridLength.Auto, GridLength.Auto, GridLength.Auto },
                 Children =
                 {
-                    
+                    new Cell("MAC") {Stroke=headerThickness},
+                    new Cell("IP") {Stroke=headerThickness},                    
                     new Cell("Armed") {Stroke=headerThickness},
-                    new Cell(camera.Name), new Cell(camera.SerialNumber), new Cell(camera.Armed)
+                    new Cell(camera.MacAddress), 
+                    new Cell(camera.Wifi.Address), 
+                    new Cell(camera.Armed)
                 }
             }
             );

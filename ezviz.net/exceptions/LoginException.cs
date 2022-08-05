@@ -29,6 +29,14 @@ public class InvalidPasswordException : LoginException
     }
 }
 
+public class InvalidVerificationCodeException : LoginException
+{
+    public InvalidVerificationCodeException() : base("API reports: Invalid Verification Code")
+    {
+
+    }
+}
+
 public class InvalidRegionException : LoginException
 {
     public InvalidRegionException(string correctRegion) : base($"API reports: Invalid Region, should be [{correctRegion}]")

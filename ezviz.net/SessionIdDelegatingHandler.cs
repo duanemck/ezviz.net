@@ -39,7 +39,9 @@ namespace ezviz.net
             {
                 throw new EzvizNetException("Not logged in to Ezviz API");
             }
-            if (Session.SessionExpiry <= DateTime.UtcNow - TimeSpan.FromMinutes(10))
+            var renewWindowOpeningTime = Session.SessionExpiry - TimeSpan.FromMinutes(10);
+            var withinRenewWindow = DateTime.UtcNow >= renewWindowOpeningTime;
+            if (withinRenewWindow)
             {
                 await Login();
             }
