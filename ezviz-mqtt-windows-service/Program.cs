@@ -12,6 +12,10 @@ await Host.CreateDefaultBuilder(args)
     {
         services
             .AddWindowsLogging()
+            .AddLogging(c =>
+            {
+                c.AddFile(hostContext.Configuration.GetSection("Logging"));
+            })
             .AddMqttPublisher<Worker>(hostContext.Configuration);            
     })
     .UseWindowsService(options =>

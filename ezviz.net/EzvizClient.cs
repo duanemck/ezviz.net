@@ -26,9 +26,18 @@ public class EzvizClient : IEzvizClient
 
     private IEzvizApi api = null!;
 
+    public bool LogAllResponses { get; set; } = false;
+
     public EzvizClient(IRequestResponseLogger requestLogger)
     {
         this.requestLogger = requestLogger;
+    }
+
+    internal EzvizClient(IEzvizApi api, IRequestResponseLogger requestLogger, SessionIdProvider sessionIdProvider)
+    {
+        this.requestLogger = requestLogger;
+        this.api = api;
+        this.sessionIdProvider = sessionIdProvider;
     }
 
     private void CacheCredentialsAndCreateApi(string username, string password, string? region)
@@ -139,23 +148,33 @@ public class EzvizClient : IEzvizClient
             var device = new Camera(deviceInfo, response, this);
             if (SUPPORTED_DEVICE_CATEGORIES.Contains(device.DeviceInfo.DeviceCategory))
             {
+                //if (LogAllResponses)
+                //{
+                //    await Log(Guid.NewGuid(), deviceInfo, response);
+                //}
                 return device;
             }            
         }
         catch (EzvizNetException ex)
         {
-            var options = new JsonSerializerOptions()
-            {
-                WriteIndented = true
-            };
-
-#pragma warning disable IL2026
-            var log = $"[[DeviceInfo=>\n\n{ JsonSerializer.Serialize(deviceInfo, options)}\n\n]] [[PagedResponse=>\n\n{ JsonSerializer.Serialize(response, options)}\n\n]]";
-#pragma warning restore IL2026
-            await requestLogger.Log(ex.Id, log);
+            await Log(ex.Id?? Guid.NewGuid(), deviceInfo, response);
             throw;
         }
         return null;
+    }
+
+    private async Task Log(Guid id, EzvizDeviceInfo deviceInfo, PagedListResponse response)
+    {
+        var options = new JsonSerializerOptions()
+        {
+            WriteIndented = true
+        };
+
+#pragma warning disable IL2026
+        var log = $"[[DeviceInfo=>\n\n{ JsonSerializer.Serialize(deviceInfo, options)}\n\n]] [[PagedResponse=>\n\n{ JsonSerializer.Serialize(response, options)}\n\n]]";
+#pragma warning restore IL2026
+        await requestLogger.Log(id, log);
+
     }
 
     public async Task SetDefenceMode(DefenceMode mode)
@@ -188,6 +207,10 @@ public class EzvizClient : IEzvizClient
 
     private IEzvizApi GetApi(string baseUrl)
     {
+        if (api != null)
+        {
+            return api;
+        }
         return RestService.For<IEzvizApi>(GetHttpClientWithAuth(baseUrl));
     }
 

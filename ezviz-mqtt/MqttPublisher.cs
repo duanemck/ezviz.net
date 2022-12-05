@@ -68,6 +68,8 @@ internal class MqttPublisher : IMqttPublisher
     {
         try
         {
+            ezvizClient.LogAllResponses = pollingConfig.LogAllResponses;
+
             ConnectToMqtt();
             if (string.IsNullOrEmpty(ezvizConfig?.Username) || string.IsNullOrEmpty(ezvizConfig?.Password))
             {

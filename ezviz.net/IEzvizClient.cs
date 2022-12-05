@@ -1,4 +1,8 @@
-﻿using ezviz.net.domain;
+﻿using System.Runtime.CompilerServices;
+using ezviz.net.domain;
+
+[assembly: InternalsVisibleTo("ezviz.net.tests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace ezviz.net
 {
@@ -9,5 +13,7 @@ namespace ezviz.net
         Task<DefenceMode> GetDefenceMode();
         Task<EzvizUser> Login(string username, string password, string? region = null);
         Task SetDefenceMode(DefenceMode mode);
+
+        public bool LogAllResponses { get; set; }
     }
 }

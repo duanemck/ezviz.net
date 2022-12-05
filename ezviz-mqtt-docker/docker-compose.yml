@@ -1,0 +1,7 @@
+version: "1.0"
+services:
+  ezviz:
+    build: .
+    volumes:
+      - './etc-pihole/:/etc/ezviz/'
+    restart: unless-stopped

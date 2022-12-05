@@ -11,11 +11,11 @@
     <PackageReference Include="M2MqttDotnetCore" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
     <PackageReference Include="System.Text.Json" Version="7.0.0-preview.1.22076.8" />
-    <PackageReference Include="TinyHealthCheck" Version="0.0.15" />
+    <PackageReference Include="TinyHealthCheck" Version="0.0.16" />
   </ItemGroup>
 
   <ItemGroup>

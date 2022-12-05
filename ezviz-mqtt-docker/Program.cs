@@ -9,13 +9,7 @@ await Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         services
-            .AddSystemdLogging()
-            .AddLogging(c=>
-            {
-                c.AddFile(hostContext.Configuration.GetSection("Logging"));
-            })
             .AddMqttPublisher<Worker>(hostContext.Configuration);
     })
-    .UseSystemd()
     .Build()
     .RunAsync();

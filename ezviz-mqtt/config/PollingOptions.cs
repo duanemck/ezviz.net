@@ -6,5 +6,7 @@ internal class PollingOptions
     public int AlarmStaleAgeMinutes { get; set; }
 
     public string? RequestLogLocation { get; set; }
+
+    public bool LogAllResponses { get; set; }
 }
 

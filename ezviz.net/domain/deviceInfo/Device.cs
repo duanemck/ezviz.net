@@ -33,7 +33,10 @@ public class Device
             TimePlans = Deserialize<TimePlan[]>(response.Time_Plan[serial]);
             QOS = Deserialize<QOS>(response.QOS[serial]);
             NoDisturb = Deserialize<NoDisturb>(response.NoDisturb[serial]);
-            Upgrade = Deserialize<Upgrade>(response.Upgrade[serial]);
+            if (response.Upgrade != null)
+            {
+                Upgrade = Deserialize<Upgrade>(response.Upgrade[serial]);
+            }
             Switches = Deserialize<Switch[]>(response.Switch[serial]);
             Wifi = Deserialize<Wifi>(response.Wifi[serial]);
         }

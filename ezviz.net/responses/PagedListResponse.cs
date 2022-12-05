@@ -24,7 +24,7 @@ namespace ezviz.net.domain
         public Dictionary<string, JsonElement> QOS { get; set; } = null!;
         public Dictionary<string, JsonElement> NoDisturb { get; set; } = null!;
         public Dictionary<string, JsonElement> Feature { get; set; } = null!;
-        public Dictionary<string, JsonElement> Upgrade { get; set; } = null!;
+        public Dictionary<string, JsonElement>? Upgrade { get; set; } = null!;
         public Dictionary<string, JsonElement> FeatureInfo { get; set; } = null!;
         public Dictionary<string, JsonElement> Switch { get; set; } = null!;
         public Dictionary<string, JsonElement> CustomTag { get; set; } = null!;

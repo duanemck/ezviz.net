@@ -1,0 +1,759 @@
+﻿{
+  "Cloud": {
+    "2306559caa0e4b4cbe7a8efd4b47e5ef": {
+      "deviceSerial": "TEST_SERIAL",
+      "channelNo": 1,
+      "status": 2,
+      "totalDays": 7,
+      "validDays": -278
+    }
+  },
+  "VTM": null,
+  "Detector": {},
+  "Products_Info": {},
+  "P2P": {
+    "TEST_SERIAL": [
+      {
+        "ip": "1.1.1.1",
+        "port": 6000
+      }
+    ]
+  },
+  "Connection": {
+    "TEST_SERIAL": {
+      "localIp": "",
+      "netIp": "2.2.2.2",
+      "localRtspPort": 0,
+      "netRtspPort": 0,
+      "localCmdPort": 9010,
+      "netCmdPort": 0,
+      "localStreamPort": 9020,
+      "netHttpPort": 0,
+      "localHttpPort": 0,
+      "netStreamPort": 0,
+      "netType": 3,
+      "wanIp": "2.2.2.2",
+      "upnp": false
+    }
+  },
+  "KMS": {
+    "TEST_SERIAL": {
+      "secretKey": "SECRET_KEY",
+      "version": "101"
+    }
+  },
+  "Status": {
+    "TEST_SERIAL": {
+      "diskNum": 1,
+      "diskState": "0---------------",
+      "globalStatus": 0,
+      "pirStatus": 0,
+      "isEncrypt": 0,
+      "encryptPwd": "PASSWORD",
+      "upgradeAvailable": 0,
+      "upgradeProcess": 0,
+      "upgradeStatus": 2,
+      "alarmSoundMode": 1,
+      "optionals": {
+        "latestUnbandTime": "16455111111",
+        "BodyDetectTimeInterval": "-1",
+        "updateCode": "0",
+        "Remind_Way": "-1",
+        "display_mode": "{ }",
+        "AlgorithmInfo": "{ }",
+        "language": "ENG",
+        "DB_Chime_ConnInfo": "{ }",
+        "Record_Mode": "{ }",
+        "Auto_night_vision": "0",
+        "device_wifi_mode": "-1",
+        "wanIp": "1.1.1.1",
+        "device_ICR_DSS": "{ }",
+        "device_static_DNS": "-1",
+        "CustomVoice": "[]",
+        "Route_LinkageStatus": "0",
+        "Battery_WorkStatus": "{ }",
+        "daylightSavingTime": "0",
+        "Alarm_DetectHumanCar": "{ }",
+        "tzCode": "123",
+        "ChimeMusic": "{ }",
+        "OSD": "{ }",
+        "CustomVoice_Volume": "{ }",
+        "diskHealth": "-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+        "inverse_mode": "{ }",
+        "OnlineStatus": "2",
+        "timeZone": "UTC\u004B02:00",
+        "video_para": "{ }",
+        "cloudChannelList": "{ }",
+        "Alarm_Light": "{ }",
+        "ROI": "{ }",
+        "diskCapacity": "121942,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+        "traversePlane_detect": "{ }",
+        "Alarm_Interval": "-1",
+        "Temperature_Threshold": "-1",
+        "kms_version": "100",
+        "field_detect": "{ }",
+        "NightVision_Model": "{ }",
+        "timeFormat": "0",
+        "talkMode": "{ }",
+        "ICR": "0",
+        "image_para": "{ }",
+        "superState": "0",
+        "voiceIndex": "0",
+        "latestUnbindTime": "16451111111199",
+        "lastUpgradeTime": "164551111117"
+      }    
+    }
+  },
+  "Time_Plan": {
+    "TEST_SERIAL": [
+      {
+        "deviceSerial": "TEST_SERIAL",
+        "channelNo": 0,
+        "type": 1,
+        "enable": 1,
+        "weekPlans": [
+          {
+            "weekDay": "0",
+            "timePlan": [
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "deviceSerial": "G06307544",
+        "channelNo": 0,
+        "type": 2,
+        "enable": 0,
+        "weekPlans": [
+          {
+            "weekDay": "0",
+            "timePlan": []
+          },
+          {
+            "weekDay": "1",
+            "timePlan": [
+              {
+                "startTime": "22:00",
+                "endTime": "23:59"
+              },
+              {
+                "startTime": "00:00",
+                "endTime": "06:00"
+              }
+            ]
+          },
+          {
+            "weekDay": "2",
+            "timePlan": [
+              {
+                "startTime": "22:00",
+                "endTime": "23:59"
+              },
+              {
+                "startTime": "00:00",
+                "endTime": "06:00"
+              }
+            ]
+          },
+          {
+            "weekDay": "3",
+            "timePlan": [
+              {
+                "startTime": "22:00",
+                "endTime": "23:59"
+              },
+              {
+                "startTime": "00:00",
+                "endTime": "06:00"
+              }
+            ]
+          },
+          {
+            "weekDay": "4",
+            "timePlan": [
+              {
+                "startTime": "22:00",
+                "endTime": "23:59"
+              },
+              {
+                "startTime": "00:00",
+                "endTime": "06:00"
+              }
+            ]
+          },
+          {
+            "weekDay": "5",
+            "timePlan": [
+              {
+                "startTime": "22:00",
+                "endTime": "23:59"
+              },
+              {
+                "startTime": "00:00",
+                "endTime": "06:00"
+              }
+            ]
+          },
+          {
+            "weekDay": "6",
+            "timePlan": [
+              {
+                "startTime": "22:00",
+                "endTime": "23:59"
+              },
+              {
+                "startTime": "00:00",
+                "endTime": "06:00"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "deviceSerial": "G06307544",
+        "channelNo": 0,
+        "type": 4,
+        "enable": -1,
+        "weekPlans": [
+          {
+            "weekDay": "0",
+            "timePlan": [
+              {
+                "startTime": "-1:65",
+                "endTime": "-1:65"
+              }
+            ]
+          },
+          {
+            "weekDay": "1",
+            "timePlan": []
+          },
+          {
+            "weekDay": "2",
+            "timePlan": []
+          },
+          {
+            "weekDay": "3",
+            "timePlan": []
+          },
+          {
+            "weekDay": "4",
+            "timePlan": []
+          },
+          {
+            "weekDay": "5",
+            "timePlan": []
+          },
+          {
+            "weekDay": "6",
+            "timePlan": []
+          }
+        ]
+      },
+      {
+        "deviceSerial": "G06307544",
+        "channelNo": 0,
+        "type": 5,
+        "enable": 1,
+        "weekPlans": [
+          {
+            "weekDay": "0",
+            "timePlan": []
+          },
+          {
+            "weekDay": "1",
+            "timePlan": []
+          },
+          {
+            "weekDay": "2",
+            "timePlan": []
+          },
+          {
+            "weekDay": "3",
+            "timePlan": []
+          },
+          {
+            "weekDay": "4",
+            "timePlan": []
+          },
+          {
+            "weekDay": "5",
+            "timePlan": []
+          },
+          {
+            "weekDay": "6",
+            "timePlan": []
+          }
+        ]
+      },
+      {
+        "deviceSerial": "G06307544",
+        "channelNo": 0,
+        "type": 7,
+        "enable": 1,
+        "weekPlans": [
+          {
+            "weekDay": "0",
+            "timePlan": []
+          },
+          {
+            "weekDay": "1",
+            "timePlan": []
+          },
+          {
+            "weekDay": "2",
+            "timePlan": []
+          },
+          {
+            "weekDay": "3",
+            "timePlan": []
+          },
+          {
+            "weekDay": "4",
+            "timePlan": []
+          },
+          {
+            "weekDay": "5",
+            "timePlan": []
+          },
+          {
+            "weekDay": "6",
+            "timePlan": []
+          }
+        ]
+      },
+      {
+        "deviceSerial": "G06307544",
+        "channelNo": 0,
+        "type": 200,
+        "enable": 1,
+        "weekPlans": [
+          {
+            "weekDay": "0,1,2,3,4,5,6",
+            "timePlan": []
+          }
+        ]
+      },
+      {
+        "deviceSerial": "G06307544",
+        "channelNo": 0,
+        "type": 8,
+        "enable": 1,
+        "weekPlans": [
+          {
+            "weekDay": "0,1,2,3,4,5,6",
+            "timePlan": []
+          }
+        ]
+      },
+      {
+        "deviceSerial": "G06307544",
+        "channelNo": 0,
+        "type": 12,
+        "enable": 0,
+        "weekPlans": [
+          {
+            "weekDay": "0,1,2,3,4,5,6",
+            "timePlan": []
+          }
+        ]
+      }
+    ],
+    "G06307980": [
+      {
+        "deviceSerial": "G06307980",
+        "channelNo": 0,
+        "type": 1,
+        "enable": 1,
+        "weekPlans": [
+          {
+            "weekDay": "0",
+            "timePlan": [
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              }
+            ]
+          },
+          {
+            "weekDay": "1",
+            "timePlan": [
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              }
+            ]
+          },
+          {
+            "weekDay": "2",
+            "timePlan": [
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              }
+            ]
+          },
+          {
+            "weekDay": "3",
+            "timePlan": [
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              }
+            ]
+          },
+          {
+            "weekDay": "4",
+            "timePlan": [
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              }
+            ]
+          },
+          {
+            "weekDay": "5",
+            "timePlan": [
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              }
+            ]
+          },
+          {
+            "weekDay": "6",
+            "timePlan": [
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              },
+              {
+                "startTime": "0:0",
+                "endTime": "24:0"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "Channel": {
+    "2306559caa0e4b4cbe7a8efd4b47e5ef": {
+      "channelDeviceSerial": null,
+      "channelNo": 1,
+      "privacyStatus": 0,
+      "powerStatus": 0,
+      "globalStatus": 0,
+      "signalStatus": 1
+    }
+  },
+  "QOS": {
+    "TEST_SERIAL": {
+      "domain": "vtmucld.ezvizlife.com",
+      "externalIp": "1.1.1.1",
+      "internalIp": "2.2.2.2",
+      "port": 10554,
+      "memo": "",
+      "idcType": "DUAL",
+      "isBackup": 0
+    }
+  },
+  "NoDisturb": {
+    "TEST_SERIAL": {
+      "alarmEnable": 0,
+      "callingEnable": 0
+    }
+  },
+  "Feature": {},
+  "Upgrade": null,
+  "FeatureInfo": null,
+  "Switch": {
+    "TEST_SERIAL": [
+      {
+        "deviceSerial": "TEST_SERIAL",
+        "channelNo": 0,
+        "type": 1,
+        "enable": true
+      }
+    ]
+  },
+  "CustomTag": null,
+  "Video_Quality": {
+    "2306559caa0e4b4cbe7a8efd4b47e5ef": [
+      {
+        "streamType": 1,
+        "videoLevel": 2
+      },
+      {
+        "streamType": 1,
+        "videoLevel": 3
+      }
+    ]
+  },
+  "Wifi": {
+    "TEST_SERIAL": {
+      "netName": "eth0",
+      "netType": "wire",
+      "address": "1.1.1.1",
+      "mask": "255.255.255.0",
+      "gateway": null,
+      "signal": 100,
+      "ssid": "SSID"
+    }
+
+  },
+  "Page": {
+    "Offset": 0,
+    "Limit": 30,
+    "TotalResults": 0,
+    "HasNext": false
+  },
+  "ResourceInfos": [
+    {
+      "ResourceId": "2306559caa0e4b4cbe7a8efd4b47e5ef",
+      "ResourceName": "Camera 1",
+      "DeviceSerial": "TEST_SERIAL",
+      "SuperDeviceSerial": "TEST_SERIAL2",
+      "LocalIndex": "0",
+      "ShareType": 0,
+      "Permission": -1,
+      "ResourceType": 0,
+      "ResourceCover": "",
+      "IsShow": 1,
+      "VideoLevel": 0,
+      "StreamBizUrl": "biz=1",
+      "GroupId": -1,
+      "CustomSetTag": 0
+    }
+  ],
+  "DeviceInfos": [
+    {
+      "Name": "Camera 1",
+      "DeviceSerial": "TEST_SERIAL",
+      "FullSerial": "CS-CV310-C0-TEST_SERIAL",
+      "DeviceType": "CS-CV310-C0-6B22WFR",
+      "DevicePicPrefix": "https://devpic.ezvizlife.com/device/image/CS-CV310-C0-6B22WFR/",
+      "Version": "V5.2.5 build 210930",
+      "Status": 2,
+      "UserDeviceCreateTime": "2022-01-01 19:20:12",
+      "ChannelNumber": 1,
+      "Hik": false,
+      "DeviceCategory": "IPC",
+      "DeviceSubCategory": "C3X",
+      "CustomType": "CS-CV310-C0-6B22WFR",
+      "OfflineTime": "2022-02-02 08:07:11",
+      "OfflineNotify": 1,
+      "InstructionBook": "http://devpic.ezvizlife.com/device/image/CS-CV310-C0-6B22WFR/instruction.jpeg",
+      "AuthCode": "AUTH CODE",
+      "Username": "USERNAME",
+      "RiskLevel": 0,
+      "OfflineTimestamp": 1670111111000,
+      "Mac": "MAC",
+      "Classify": 1
+    }
+  ],
+  "Meta": {
+    "Code": 200,
+    "Message": "",
+    "MoreInfo": {
+      "UPGRADE": 503,
+      "VTM": 503
+    }
+  }
+}
