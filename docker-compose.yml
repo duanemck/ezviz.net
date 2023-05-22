@@ -1,0 +1,12 @@
+version: '3'
+services:
+  ezvizmqtt:
+    container_name: ezvizmqtt
+    image: "ezviz-mqtt:latest"
+    ports:
+      - "8081:8081/tcp"
+      - "8082:8082/tcp"
+    volumes:
+      - ./config:/config
+    restart: unless-stopped
+

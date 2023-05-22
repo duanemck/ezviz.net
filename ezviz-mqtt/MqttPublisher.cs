@@ -3,6 +3,7 @@ using ezviz.net.domain;
 using ezviz.net.exceptions;
 using ezviz_mqtt.config;
 using ezviz_mqtt.health;
+using ezviz_mqtt.home_assistant;
 using ezviz_mqtt.util;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -33,6 +34,14 @@ internal class MqttPublisher : IMqttPublisher
 
     private IDictionary<string, List<string>> TrackedAlarms = new Dictionary<string, List<string>>();
 
+    private readonly string _globalCommandTopic;
+    private readonly string _globalStateTopic;
+    private readonly string _deviceCommandTopic;
+
+    private const string homeAssistantDiscoveryTopic = "homeassistant/{device_class}/{unique_id}/config";
+    private string homeAssistantUniqueId;
+    private bool discoveryMessagesSent = false;
+
     public MqttPublisher(
         ILogger<MqttPublisher> logger,
         IOptions<EzvizOptions> ezvizOptions,
@@ -51,6 +60,9 @@ internal class MqttPublisher : IMqttPublisher
         this.ezvizClient = ezvizClient;
         mqttClient = new MqttClient(mqttConfig.Host);
         pollingConfig = pollingOptions.Value;
+        _globalCommandTopic = mqttConfig.Topics["globalCommand"];
+        _deviceCommandTopic = mqttConfig.Topics["command"].Replace("{serial}", "+");
+        _globalStateTopic = mqttConfig.Topics["globalStatus"];
 
         jsonSerializationOptions = new JsonSerializerOptions()
         {
@@ -76,7 +88,8 @@ internal class MqttPublisher : IMqttPublisher
                 throw new EzvizNetException("Please provide an ezviz username and password");
             }
             logger.LogInformation("Logging in to ezviz API as {0}", ezvizConfig.Username);
-            await ezvizClient.Login(ezvizConfig.Username, ezvizConfig.Password);
+            var user = await ezvizClient.Login(ezvizConfig.Username, ezvizConfig.Password);
+            homeAssistantUniqueId = $"ezviz_bridge_{user.UserId}";
         }
         catch (Exception ex)
         {
@@ -93,6 +106,46 @@ internal class MqttPublisher : IMqttPublisher
                 throw new EzvizNetException("Max retries exceeded, giving up");
             }
         }
+    }
+
+    private void SendHomeAssistantDiscoveryMessages(IEnumerable<Camera> cameras)
+    {
+        //TODO: Think about this some more and then complete it
+        return;
+        //var device = new Device(homeAssistantUniqueId, "EZVIZ Mqtt Bridge", "duanemck", "");
+        //var availability = new Availability(mqttConfig.ServiceLwtTopic, mqttConfig.ServiceLwtOnlineMessage, mqttConfig.ServiceLwtOfflineMessage);
+        //var defenceModeEntity = new Entity()
+        //{
+        //    Name = "EZVIZ Defence Mode",
+        //    UniqueId = $"{homeAssistantUniqueId}_defence_mode",
+        //    Device = device,
+        //    Availability = availability,
+        //    CommandTopic = _globalCommandTopic.Replace("#", MQTT_COMMAND_DEFENCEMODE),
+        //    StateTopic = _globalStateTopic.Replace("{command}", MQTT_COMMAND_DEFENCEMODE),
+        //    DeviceClass = "switch",
+        //    PayloadOn = "Away",
+        //    PayloadOff = "Home"
+        //};
+
+        //SendMqtt(homeAssistantDiscoveryTopic, defenceModeEntity, true);
+
+        //foreach (var camera in cameras)
+        //{
+        //    var cameraAvailability = new Availability(LwtTopicForCamera(camera.SerialNumber), mqttConfig.ServiceLwtOnlineMessage, mqttConfig.ServiceLwtOfflineMessage);
+
+        //    var entity = new Entity()
+        //    {
+        //        Name = camera.Name,
+        //        UniqueId = $"{homeAssistantUniqueId}_{camera.SerialNumber}",
+        //        Device = device,
+        //        Availability = cameraAvailability,
+        //        CommandTopic = _globalCommandTopic,
+        //        StateTopic = _globalStateTopic,
+        //        DeviceClass = "switch",
+        //        PayloadOn = "Away",
+        //        PayloadOff = "Home"
+        //    };
+        //}
     }
 
 
@@ -112,14 +165,19 @@ internal class MqttPublisher : IMqttPublisher
         SendMqtt(topic, message, true, false);
     }
 
+    private string LwtTopicForCamera(string? serial)
+    {
+        return mqttConfig.Topics["lwt"].Replace("{serial}", serial);
+    }
+
     private void SendLwtForCamera(string? serial, string message)
     {
         if (serial == null)
         {
             throw new ArgumentNullException(nameof(serial));
         }
-        var topic = mqttConfig.Topics["lwt"].Replace("{serial}", serial);
-        SendMqtt(topic, message, true, false);
+        
+        SendMqtt(LwtTopicForCamera(serial), message, true, false);
     }
 
     private void SendMqtt(string topic, object data, bool retain = false, bool jsonSerialize = true)
@@ -159,21 +217,18 @@ internal class MqttPublisher : IMqttPublisher
             {
                 counter++;
             }
-
         }
 
         var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
         var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
         try
         {
-
             if (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras)
             {
                 await PollCameras(stoppingToken);
                 LastFullPoll = DateTime.Now;
                 serviceState.LastStatusCheck = LastFullPoll;
             }
-
             if (timeSinceLastAlarmPoll.TotalMinutes >= pollingConfig.Alarms)
             {
                 await PollAlarms(stoppingToken);
@@ -194,10 +249,16 @@ internal class MqttPublisher : IMqttPublisher
     {
         logger.LogInformation("Checking Defence Mode");
         var defenceMode = await ezvizClient.GetDefenceMode();
-        SendMqtt(mqttConfig.Topics["globalStatus"].Replace("{command}", MQTT_COMMAND_DEFENCEMODE), defenceMode.ToString(), false, false);
+        SendMqtt(_globalStateTopic.Replace("{command}", MQTT_COMMAND_DEFENCEMODE), defenceMode.ToString(), false, false);
 
         logger.LogInformation("Polling ezviz API for full camera details");
         cameras = await ezvizClient.GetCameras(stoppingToken);
+
+        if (!discoveryMessagesSent)
+        {
+            SendHomeAssistantDiscoveryMessages(cameras);
+            discoveryMessagesSent = true;
+        }
 
         foreach (var camera in cameras)
         {
@@ -206,7 +267,7 @@ internal class MqttPublisher : IMqttPublisher
                 return;
             }
             SendMqttForCamera("status", camera.SerialNumber, camera);
-            SendLwtForCamera(camera.SerialNumber, (camera.Online ?? false) ? "ON" : "OFF");
+            SendLwtForCamera(camera.SerialNumber, (camera.Online ?? false) ? mqttConfig.ServiceLwtOnlineMessage : mqttConfig.ServiceLwtOfflineMessage);
         }
         logger.LogInformation("Polling done, published details of {0} cameras", cameras.Count());
     }
@@ -278,14 +339,11 @@ internal class MqttPublisher : IMqttPublisher
         mqttClient.Connect(mqttConfig.Client, mqttConfig.Username, mqttConfig.Password, false, MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true, mqttConfig.ServiceLwtTopic, mqttConfig.ServiceLwtOfflineMessage, false, 60);
         SendLwtForService(mqttConfig.ServiceLwtOnlineMessage);
 
+        logger.LogInformation("Subscribing to {0}", _deviceCommandTopic);
+        mqttClient.Subscribe(new[] { _deviceCommandTopic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
 
-        var commandTopic = mqttConfig.Topics["command"].Replace("{serial}", "+");
-        logger.LogInformation("Subscribing to {0}", commandTopic);
-        mqttClient.Subscribe(new[] { commandTopic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
-
-        commandTopic = mqttConfig.Topics["globalCommand"];
-        logger.LogInformation("Subscribing to {0}", commandTopic);
-        mqttClient.Subscribe(new[] { commandTopic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+        logger.LogInformation("Subscribing to {0}", _globalCommandTopic);
+        mqttClient.Subscribe(new[] { _globalCommandTopic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
 
         serviceState.MqttConnected = true;
 
@@ -344,7 +402,9 @@ internal class MqttPublisher : IMqttPublisher
         switch (command)
         {
             case MQTT_COMMAND_DEFENCEMODE:
-                await ezvizClient.SetDefenceMode(EnumX.Parse<DefenceMode>(message));
+                var defenceMode = EnumX.Parse<DefenceMode>(message);
+                await ezvizClient.SetDefenceMode(defenceMode);
+                SendMqtt(_globalStateTopic.Replace("{command}", MQTT_COMMAND_DEFENCEMODE), defenceMode.ToString(), false, false);
                 break;
             default:
                 logger.LogInformation($"Unknown MQTT command received {command}");

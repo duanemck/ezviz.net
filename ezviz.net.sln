@@ -15,7 +15,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz-cli", "ezviz-cli\ezvi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz-mqtt-docker", "ezviz-mqtt-docker\ezviz-mqtt-docker.csproj", "{208C1E61-55EE-4065-83A1-8D85E1886472}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ezviz.net.tests", "ezviz.net.tests\ezviz.net.tests.csproj", "{724AC69B-74F4-4965-BB4F-E0C315E99F4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz.net.tests", "ezviz.net.tests\ezviz.net.tests.csproj", "{724AC69B-74F4-4965-BB4F-E0C315E99F4E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{A6EC904F-FEE0-4019-B320-0C855DD71AAC}"
+	ProjectSection(SolutionItems) = preProject
+		build-docker-arm.sh = build-docker-arm.sh
+		build-docker.sh = build-docker.sh
+		docker-compose.yml = docker-compose.yml
+		Dockerfile = Dockerfile
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

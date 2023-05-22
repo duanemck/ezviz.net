@@ -5,6 +5,8 @@ await Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(app =>
     {
         app.AddJsonFile("/etc/ezviz-mqtt/appsettings.json", true);
+        app.AddJsonFile("/config/appsettings.json", true);
+        app.AddEnvironmentVariables();
     })
     .ConfigureServices((hostContext, services) =>
     {
