@@ -1,3 +1,5 @@
 #!/bin/sh
 
-docker build -t duanemck/ezviz-mqtt -f Dockerfile .
+./build-docker-amd64.sh
+./build-docker-arm.sh
+
