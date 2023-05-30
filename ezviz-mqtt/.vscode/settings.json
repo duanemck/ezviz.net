@@ -1,0 +1,9 @@
+{
+    "plantuml.diagramsRoot": "diagrams",
+    "plantuml.exportFormat": "png",
+    "plantuml.render": "Local",
+    "plantuml.jar": "",
+    "plantuml.jarArgs": [
+        
+    ]
+}

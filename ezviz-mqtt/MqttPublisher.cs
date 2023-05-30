@@ -3,7 +3,6 @@ using ezviz.net.domain;
 using ezviz.net.exceptions;
 using ezviz_mqtt.config;
 using ezviz_mqtt.health;
-using ezviz_mqtt.home_assistant;
 using ezviz_mqtt.util;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
