@@ -4,12 +4,16 @@ using ezviz.net.exceptions;
 using ezviz_mqtt.config;
 using ezviz_mqtt.health;
 using ezviz_mqtt.util;
+using ha_autodiscovery.net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Json;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
+using Camera = ezviz.net.domain.Camera;
+using HACamera = ha_autodiscovery.net.Camera;
+using HADevice = ha_autodiscovery.net.Device;
 
 namespace ezviz_mqtt;
 
@@ -41,6 +45,8 @@ internal class MqttPublisher : IMqttPublisher
     private string homeAssistantUniqueId;
     private bool discoveryMessagesSent = false;
 
+    private IDictionary<string, string> mqttTopics;
+
     public MqttPublisher(
         ILogger<MqttPublisher> logger,
         IOptions<EzvizOptions> ezvizOptions,
@@ -55,13 +61,15 @@ internal class MqttPublisher : IMqttPublisher
         ezvizConfig = ezvizOptions.Value;
         mqttConfig = mqttOptions.Value;
         jsonConfig = jsonOptions.Value;
-        //ezvizClient = new EzvizClient(ezvizConfig.Username, ezvizConfig.Password);.
         this.ezvizClient = ezvizClient;
         mqttClient = new MqttClient(mqttConfig.Host);
         pollingConfig = pollingOptions.Value;
-        _globalCommandTopic = mqttConfig.Topics["globalCommand"];
-        _deviceCommandTopic = mqttConfig.Topics["command"].Replace("{serial}", "+");
-        _globalStateTopic = mqttConfig.Topics["globalStatus"];
+
+        mqttTopics = new Dictionary<string, string>(mqttConfig.Topics, StringComparer.OrdinalIgnoreCase);
+
+        _globalCommandTopic = GetTopic(Topics.GlobalCommand);
+        _deviceCommandTopic = GetTopic(Topics.Command, "+");
+        _globalStateTopic = GetTopic(Topics.GlobalStatus);
 
         jsonSerializationOptions = new JsonSerializerOptions()
         {
@@ -107,8 +115,63 @@ internal class MqttPublisher : IMqttPublisher
         }
     }
 
+    private string GetTopic(Topics key)
+    {
+        return mqttTopics[key.ToString()];
+    }
+
+    private string GetTopic(Topics key, Camera camera)
+    {
+        return GetTopic(key, camera.SerialNumber);
+    }
+
+    private string GetTopic(Topics key, string? serialNumber)
+    {
+        return GetTopic(key).Replace("{serial}", serialNumber);
+    }
+
+    private HACamera MapCameraToHA(Camera camera, HADevice device)
+    {
+        var haCamera = new HACamera($"{camera.DeviceInfo.Name}_Camera", $"ezviz_{camera.SerialNumber}_camera", device, GetTopic(Topics.Image, camera))
+        {
+            Availability = new List<Availability>()
+            {
+                new Availability(LwtTopicForCamera(camera.SerialNumber), mqttConfig.ServiceLwtOnlineMessage, mqttConfig.ServiceLwtOfflineMessage)
+            },
+            Icon = "mdi:cctv",
+            ImageEncoding = "b64"
+        };
+
+        return haCamera;
+    }
+
+    private HADevice MapCameraToDevice(Camera camera)
+    {
+        return new HADevice($"ezviz_{camera.SerialNumber}", camera.DeviceInfo.Name, "DuaneMck Ezviz", camera.DeviceType)
+        {
+            Connections = new List<Tuple<string, string>> { new Tuple<string, string>("MAC", camera.MacAddress ?? "") },
+            SoftwareVersion = camera.Version
+        };
+    }
+
+    private string MapDiscoveryTopic(string deviceClass, Entity entity)
+    {
+        return homeAssistantDiscoveryTopic
+            .Replace("{device_class}", deviceClass)
+            .Replace("{unique_id}", entity.UniqueId);
+    }
+
     private void SendHomeAssistantDiscoveryMessages(IEnumerable<Camera> cameras)
     {
+        foreach (var camera in cameras)
+        {
+            var haDevice = MapCameraToDevice(camera);
+            var haCamera = MapCameraToHA(camera, haDevice);
+            SendMqtt(MapDiscoveryTopic("camera",haCamera), haCamera, true);
+        }
+
+
+
         //TODO: Think about this some more and then complete it
         return;
         //var device = new Device(homeAssistantUniqueId, "EZVIZ Mqtt Bridge", "duanemck", "");
@@ -125,36 +188,16 @@ internal class MqttPublisher : IMqttPublisher
         //    PayloadOn = "Away",
         //    PayloadOff = "Home"
         //};
-
-        //SendMqtt(homeAssistantDiscoveryTopic, defenceModeEntity, true);
-
-        //foreach (var camera in cameras)
-        //{
-        //    var cameraAvailability = new Availability(LwtTopicForCamera(camera.SerialNumber), mqttConfig.ServiceLwtOnlineMessage, mqttConfig.ServiceLwtOfflineMessage);
-
-        //    var entity = new Entity()
-        //    {
-        //        Name = camera.Name,
-        //        UniqueId = $"{homeAssistantUniqueId}_{camera.SerialNumber}",
-        //        Device = device,
-        //        Availability = cameraAvailability,
-        //        CommandTopic = _globalCommandTopic,
-        //        StateTopic = _globalStateTopic,
-        //        DeviceClass = "switch",
-        //        PayloadOn = "Away",
-        //        PayloadOff = "Home"
-        //    };
-        //}
     }
 
 
-    private void SendMqttForCamera(string topicKey, string? serial, object data, bool retain = false)
+    private void SendMqttForCamera(Topics topicKey, string? serial, object data, bool retain = false)
     {
         if (serial == null)
         {
             throw new ArgumentNullException(nameof(serial));
         }
-        var topic = mqttConfig.Topics[topicKey].Replace("{serial}", serial);
+        var topic = GetTopic(topicKey, serial);
         SendMqtt(topic, data, retain);
     }
 
@@ -166,7 +209,7 @@ internal class MqttPublisher : IMqttPublisher
 
     private string LwtTopicForCamera(string? serial)
     {
-        return mqttConfig.Topics["lwt"].Replace("{serial}", serial);
+        return GetTopic(Topics.LWT, serial);
     }
 
     private void SendLwtForCamera(string? serial, string message)
@@ -175,7 +218,7 @@ internal class MqttPublisher : IMqttPublisher
         {
             throw new ArgumentNullException(nameof(serial));
         }
-        
+
         SendMqtt(LwtTopicForCamera(serial), message, true, false);
     }
 
@@ -265,7 +308,7 @@ internal class MqttPublisher : IMqttPublisher
             {
                 return;
             }
-            SendMqttForCamera("status", camera.SerialNumber, camera);
+            SendMqttForCamera(Topics.Status, camera.SerialNumber, camera);
             SendLwtForCamera(camera.SerialNumber, (camera.Online ?? false) ? mqttConfig.ServiceLwtOnlineMessage : mqttConfig.ServiceLwtOfflineMessage);
         }
         logger.LogInformation("Polling done, published details of {0} cameras", cameras.Count());
@@ -300,7 +343,7 @@ internal class MqttPublisher : IMqttPublisher
                         {
                             logger.LogInformation($"New alarm found [{alarm.AlarmId}]");
                             alarm.DownloadedPicture = await ezvizClient.GetAlarmImageBase64(alarm);
-                            SendMqttForCamera("alarm", camera.SerialNumber, alarm);
+                            SendMqttForCamera(Topics.Alarm, camera.SerialNumber, alarm);
                         }
                     }
                     else
@@ -353,7 +396,7 @@ internal class MqttPublisher : IMqttPublisher
         string utfString = Encoding.UTF8.GetString(e.Message, 0, e.Message.Length);
         logger.LogInformation($"Received message via MQTT from [{e.Topic}] => {utfString}");
 
-        if (e.Topic.StartsWith(mqttConfig.Topics["globalCommand"].Replace("/#", "")))
+        if (e.Topic.StartsWith(GetTopic(Topics.GlobalCommand).Replace("/#", "")))
         {
             Task.WaitAll(HandleGlobalCommand(e.Topic, utfString));
         }

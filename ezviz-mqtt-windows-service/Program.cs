@@ -7,6 +7,7 @@ await Host.CreateDefaultBuilder(args)
     {
         var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ezviz-mqtt");
         app.AddJsonFile(Path.Combine(folder, "appsettings.json"), true);
+        app.AddUserSecrets<Program>();
     })
     .ConfigureServices((hostContext, services) =>
     {

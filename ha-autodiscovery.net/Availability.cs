@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 
 namespace ha_autodiscovery.net;
-internal class Availability
+public class Availability
 {
     public Availability(string topic, string online, string offline) : this(topic)
     {

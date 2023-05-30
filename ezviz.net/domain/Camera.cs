@@ -32,6 +32,11 @@ namespace ezviz.net.domain
         public string Name => DeviceInfo.Name;
 
         /// <summary>
+        /// Current firmware version
+        /// </summary>
+        public string Version => DeviceInfo.Version;
+
+        /// <summary>
         /// ezviz model name
         /// </summary>
         public string DeviceType => $"{DeviceInfo.DeviceCategory} {DeviceInfo.DeviceSubCategory}";

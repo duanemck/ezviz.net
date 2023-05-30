@@ -2,9 +2,9 @@
 
 namespace ha_autodiscovery.net;
 
-internal class Camera : Entity
+public class Camera : Entity
 {
-    public Camera(string topic) : base("", "", null)
+    public Camera(string name, string uniqueId, Device device, string topic) : base(name, uniqueId, device)
     {
         Topic = topic;
     }

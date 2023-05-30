@@ -2,7 +2,7 @@
 
 namespace ha_autodiscovery.net;
 
-internal class Device
+public class Device
 {
     public Device(string uniqueId, string name, string manufacturer, string model)
     {

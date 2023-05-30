@@ -3,7 +3,7 @@
 namespace ha_autodiscovery.net;
 
 //https://www.home-assistant.io/integrations/mqtt#mqtt-discovery
-internal class Entity
+public class Entity
 {
     public Entity(string name, string uniqueId, Device device)
     {
