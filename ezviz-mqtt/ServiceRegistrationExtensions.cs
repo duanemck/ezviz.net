@@ -28,6 +28,7 @@ namespace ezviz_mqtt
             services.AddEzvizService(configuration);
 
             services.AddSingleton<IRequestResponseLogger, FileRequestResponseLogger>();
+            services.AddSingleton<IPushNotificationLogger, PushNotificationLogger>();
             return services;
         }
     }

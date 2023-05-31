@@ -25,6 +25,7 @@ public class Worker : BackgroundService
             await publisher.PublishAsync(stoppingToken);
             await Task.Delay(500, stoppingToken);
         }
+        await publisher.Shutdown();
         serviceState.IsRunning = false;
     }
 }

@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz-mqtt-windows-service"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz-cli", "ezviz-cli\ezviz-cli.csproj", "{27D3E0BF-245A-4299-A58E-1A14E0F9E9B7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz-mqtt-docker", "ezviz-mqtt-docker\ezviz-mqtt-docker.csproj", "{208C1E61-55EE-4065-83A1-8D85E1886472}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezviz.net.tests", "ezviz.net.tests\ezviz.net.tests.csproj", "{724AC69B-74F4-4965-BB4F-E0C315E99F4E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{A6EC904F-FEE0-4019-B320-0C855DD71AAC}"
@@ -55,10 +53,6 @@ Global
 		{27D3E0BF-245A-4299-A58E-1A14E0F9E9B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27D3E0BF-245A-4299-A58E-1A14E0F9E9B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27D3E0BF-245A-4299-A58E-1A14E0F9E9B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{208C1E61-55EE-4065-83A1-8D85E1886472}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{208C1E61-55EE-4065-83A1-8D85E1886472}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{208C1E61-55EE-4065-83A1-8D85E1886472}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{208C1E61-55EE-4065-83A1-8D85E1886472}.Release|Any CPU.Build.0 = Release|Any CPU
 		{724AC69B-74F4-4965-BB4F-E0C315E99F4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{724AC69B-74F4-4965-BB4F-E0C315E99F4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{724AC69B-74F4-4965-BB4F-E0C315E99F4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
