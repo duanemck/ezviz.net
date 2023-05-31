@@ -166,8 +166,40 @@ internal class MqttPublisher : IMqttPublisher
         foreach (var camera in cameras)
         {
             var haDevice = MapCameraToDevice(camera);
+            
+            //Attributes
+            /* WAN Ip
+             * MacAddress
+             * LocalRtspPort
+             * Channel
+             * 
+             */
             var haCamera = MapCameraToHA(camera, haDevice);
             SendMqtt(MapDiscoveryTopic("camera",haCamera), haCamera, true);
+
+
+            /*
+             * Options Sound level
+             * Switch Alarm Schedule
+             * Sensor Upgrade Available
+             * Switch Upgrade In Progress
+             * Sensor Upgrade Percent
+             * Switch Sleeping
+             * Switch Audio Enabled
+             * Switch Infrared enabled
+             * Switch Status LED enabled
+             * Switch Mobile trackign enabled
+             * Switch Notify offline
+             * Sensor RTSP encrypted
+             * Sensor BatteryLevel
+             * Sensor PiRStatus (Motion?)
+             * Sensor Disk Capacity
+             * Switch Armed
+             * Options DetectionMethod
+             * NumberInput Sensitivity
+             * Sensor LastAlarm (Attributes)
+             * Sensor AlarmManuallyActivated
+             */
         }
 
 
