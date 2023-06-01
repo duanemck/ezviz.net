@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using ezviz.net.domain;
+using ezviz.net.util;
 
 [assembly: InternalsVisibleTo("ezviz.net.tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
@@ -15,5 +16,8 @@ namespace ezviz.net
         Task SetDefenceMode(DefenceMode mode);
 
         public bool LogAllResponses { get; set; }
+
+        public Task EnablePushNotifications(IPushNotificationLogger logger, Action<Alarm> messageHandler);
+        public Task Shutdown();
     }
 }

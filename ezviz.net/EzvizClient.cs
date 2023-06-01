@@ -2,6 +2,7 @@
 using ezviz.net.domain.deviceInfo;
 using ezviz.net.exceptions;
 using ezviz.net.util;
+using ezviz_mqtt.cloud_mqtt;
 using Refit;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,6 +24,7 @@ public class EzvizClient : IEzvizClient
     private SystemConfigInfo systemConfig = null!;
 
     private SessionIdProvider sessionIdProvider = new SessionIdProvider();
+    private PushNotificationManager pushManager;
 
     private IEzvizApi api = null!;
 
@@ -61,9 +63,9 @@ public class EzvizClient : IEzvizClient
         {
             { "account", username ?? "" },
             { "password", password ?? "" },
-            { "cuName", "SFRDIDEw" },
+            { "cuName", Constants.CU_NAME },
             { "msgType", "0" },
-            { "feature_code", "1fc28fa018178a1cd1c091b13b2f9f02"}
+            { "feature_code", Constants.FEATURE_CODE}
         };
 
         LoginResponse response;
@@ -450,6 +452,25 @@ public class EzvizClient : IEzvizClient
         var client = GetHttpClientWithAuth(null);
         return await client.GetStreamAsync(url);
     }
+
+    public async Task EnablePushNotifications(IPushNotificationLogger logger, Action<Alarm> messageHandler)
+    {
+        if (user == null)
+        {
+            throw new EzvizNetException("Cannot register for push notifications before logging in");
+        }
+        pushManager = new PushNotificationManager(this, logger, messageHandler);
+        await pushManager.Connect(user, session, systemConfig);
+    }
+
+    public async Task Shutdown()
+    {
+        if ( pushManager != null)
+        {
+            await pushManager.Shutdown();
+        }        
+    }
+
 }
 
 internal class Token

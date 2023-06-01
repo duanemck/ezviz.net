@@ -2,7 +2,7 @@ version: '3'
 services:
   ezvizmqtt:
     container_name: ezvizmqtt
-    image: "ezviz-mqtt:latest"
+    image: "duanemck/ezviz-mqtt:beta"
     ports:
       - "8081:8081/tcp"
       - "8082:8082/tcp"

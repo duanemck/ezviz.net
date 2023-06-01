@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ezviz.net.cloud_mqtt;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -9,6 +10,25 @@ namespace ezviz.net.domain;
 
 public class Alarm
 {
+    public Alarm()
+    {
+        
+    }
+
+    internal Alarm(PushMessage pushMessage)
+    {
+        string[] alarmDetails = pushMessage.Ext.Split(",");
+
+        AlarmId = alarmDetails[15];
+        AlarmMessage = pushMessage.Alert;
+        AlarmName = alarmDetails[17];
+
+        AlarmStartTimeStr = alarmDetails[1];
+        DeviceSerial = alarmDetails[2];
+        AlarmType = int.Parse(alarmDetails[4]);
+        PicUrl = alarmDetails.Length > 16 ? alarmDetails[16] : "";
+    }
+
     public string AlarmId { get; set; } = null!;
     public string UserId { get; set; } = null!;
     public string DeviceSerial { get; set; } = null!;

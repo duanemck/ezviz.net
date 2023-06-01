@@ -10,5 +10,7 @@ public interface IMqttPublisher : IDisposable
 {
     Task PublishAsync(CancellationToken stoppingToken);
     Task Init();
+
+    Task Shutdown();
 }
 

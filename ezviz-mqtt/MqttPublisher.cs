@@ -1,6 +1,7 @@
 ﻿using ezviz.net;
 using ezviz.net.domain;
 using ezviz.net.exceptions;
+using ezviz.net.util;
 using ezviz_mqtt.config;
 using ezviz_mqtt.health;
 using ezviz_mqtt.util;
@@ -27,6 +28,7 @@ internal class MqttPublisher : IMqttPublisher
     private readonly PollingOptions pollingConfig;
 
     private readonly IEzvizClient ezvizClient;
+    private readonly IPushNotificationLogger pushLogger;
     private readonly MqttClient mqttClient;
     private readonly JsonSerializerOptions jsonSerializationOptions;
 
@@ -54,7 +56,8 @@ internal class MqttPublisher : IMqttPublisher
         IOptions<JsonOptions> jsonOptions,
         IOptions<PollingOptions> pollingOptions,
         MqttServiceState serviceState,
-        IEzvizClient ezvizClient)
+        IEzvizClient ezvizClient,
+        IPushNotificationLogger pushLogger)
     {
         this.logger = logger;
         this.serviceState = serviceState;
@@ -62,6 +65,7 @@ internal class MqttPublisher : IMqttPublisher
         mqttConfig = mqttOptions.Value;
         jsonConfig = jsonOptions.Value;
         this.ezvizClient = ezvizClient;
+        this.pushLogger = pushLogger;
         mqttClient = new MqttClient(mqttConfig.Host);
         pollingConfig = pollingOptions.Value;
 
@@ -97,13 +101,18 @@ internal class MqttPublisher : IMqttPublisher
             logger.LogInformation("Logging in to ezviz API as {0}", ezvizConfig.Username);
             var user = await ezvizClient.Login(ezvizConfig.Username, ezvizConfig.Password);
             homeAssistantUniqueId = $"ezviz_bridge_{user.UserId}";
+
+            if (ezvizConfig.EnablePushNotifications)
+            {
+                await ezvizClient.EnablePushNotifications(pushLogger, HandlePushedAlarmMessage);
+            }
+
         }
         catch (Exception ex)
         {
-            logger.LogError($"Could not initialize MQTT publisher [{ex.Message}]");
             if (InitRetries < mqttConfig.ConnectRetries)
             {
-                logger.LogError($"Could not initialize MQTT publisher [{ex.Message}]");
+                logger.LogError(ex, $"Could not initialize MQTT publisher");
                 InitRetries++;
                 await Task.Delay(mqttConfig.ConnectRetryDelaySeconds * 1000);
                 await Init();
@@ -115,9 +124,19 @@ internal class MqttPublisher : IMqttPublisher
         }
     }
 
+    private void HandlePushedAlarmMessage(Alarm alarm)
+    
+        var camera = cameras.FirstOrDefault(camera => camera.SerialNumber == alarm.DeviceSerial);
+        if (camera == null)
+        {
+            throw new EzvizNetException($"Received alarm for an untracked camera [{alarm.DeviceSerial}]");
+        }
+        HandleNewAlarms(camera, alarm).Wait();
+    }
+    
     private string GetTopic(Topics key)
-    {
-        return mqttTopics[key.ToString()];
+    {    
+                return mqttTopics[key.ToString()];
     }
 
     private string GetTopic(Topics key, Camera camera)
@@ -346,6 +365,60 @@ internal class MqttPublisher : IMqttPublisher
         logger.LogInformation("Polling done, published details of {0} cameras", cameras.Count());
     }
 
+    private List<string> GetTrackedAlarmsForCamera(string serialNumber)
+    {
+        if (!TrackedAlarms.ContainsKey(serialNumber))
+        {
+            TrackedAlarms[serialNumber] = new List<string>();
+        }
+        return TrackedAlarms[serialNumber];
+    }
+
+    private Task HandleNewAlarms(Camera camera,Alarm alarm)
+    {
+        return HandleNewAlarms(camera, new List<Alarm> { alarm }, false);
+    }
+
+    private async Task HandleNewAlarms(Camera camera, IEnumerable<Alarm> alarms, bool cleanupAlarms = true)
+    {
+        var cameraTrackedAlarms = GetTrackedAlarmsForCamera(camera.SerialNumber);
+        foreach (var alarm in alarms.Where(a => !cameraTrackedAlarms.Contains(a.AlarmId)))
+        {
+            if (alarm.IsEarlierThan(pollingConfig.AlarmStaleAgeMinutes))
+            {
+                logger.LogDebug($"Alarm [{alarm.AlarmId}] is newer than {pollingConfig.AlarmStaleAgeMinutes} minute(s)");
+                if (!cameraTrackedAlarms.Contains(alarm.AlarmId))
+                {
+                    logger.LogInformation($"New alarm found [{alarm.AlarmId}]");
+                    if (alarm.DownloadedPicture == null)
+                    {
+                        alarm.DownloadedPicture = await ezvizClient.GetAlarmImageBase64(alarm);
+`                    }
+                            SendMqttForCamera(Topics.Alarm, camera.SerialNumber, alarm);
+                }
+            }
+            else
+            {
+                logger.LogDebug($"Alarm [{alarm.AlarmId}] is older than {pollingConfig.AlarmStaleAgeMinutes} minute(s)");
+            }
+            cameraTrackedAlarms.Add(alarm.AlarmId);
+            logger.LogDebug($"Alarm [{alarm.AlarmId}] is now being tracked and won't be processed again");
+        }
+        if (cleanupAlarms)
+        {
+            var alarmsToStopTracking = new List<string>();
+            foreach (var trackedAlarm in cameraTrackedAlarms)
+            {
+                if (!alarms.Any(a => a.AlarmId == trackedAlarm))
+                {
+                    logger.LogDebug($"Removing alarm [{trackedAlarm}] from tracking as it's no longer being reported by the API");
+                    alarmsToStopTracking.Add(trackedAlarm);
+                }
+            }
+            alarmsToStopTracking.ForEach(alarmId => cameraTrackedAlarms.Remove(alarmId));
+        }
+    }
+
     private async Task PollAlarms(CancellationToken stoppingToken)
     {
         logger.LogInformation("Polling ezviz API for full recent alarms");
@@ -355,46 +428,14 @@ internal class MqttPublisher : IMqttPublisher
             {
                 return;
             }
-            if (!TrackedAlarms.ContainsKey(camera.SerialNumber))
-            {
-                TrackedAlarms[camera.SerialNumber] = new List<string>();
-            }
-            var cameraTrackedAlarms = TrackedAlarms[camera.SerialNumber];
+            
             try
             {
                 logger.LogInformation($"Checking [{camera.Name}] for alarms");
                 var alarms = (await camera.GetAlarms()).Where(a => a.IsCheck == 0);
                 logger.LogDebug($"Found {alarms.Count()} unread alarms");
 
-                foreach (var alarm in alarms.Where(a => !cameraTrackedAlarms.Contains(a.AlarmId)))
-                {
-                    if (alarm.IsEarlierThan(pollingConfig.AlarmStaleAgeMinutes))
-                    {
-                        logger.LogDebug($"Alarm [{alarm.AlarmId}] is newer than {pollingConfig.AlarmStaleAgeMinutes} minute(s)");
-                        if (!cameraTrackedAlarms.Contains(alarm.AlarmId))
-                        {
-                            logger.LogInformation($"New alarm found [{alarm.AlarmId}]");
-                            alarm.DownloadedPicture = await ezvizClient.GetAlarmImageBase64(alarm);
-                            SendMqttForCamera(Topics.Alarm, camera.SerialNumber, alarm);
-                        }
-                    }
-                    else
-                    {
-                        logger.LogDebug($"Alarm [{alarm.AlarmId}] is older than {pollingConfig.AlarmStaleAgeMinutes} minute(s)");
-                    }
-                    cameraTrackedAlarms.Add(alarm.AlarmId);
-                    logger.LogDebug($"Alarm [{alarm.AlarmId}] is now being tracked and won't be processed again");
-                }
-                var alarmsToStopTracking = new List<string>();
-                foreach (var trackedAlarm in cameraTrackedAlarms)
-                {
-                    if (!alarms.Any(a => a.AlarmId == trackedAlarm))
-                    {
-                        logger.LogDebug($"Removing alarm [{trackedAlarm}] from tracking as it's no longer being reported by the API");
-                        alarmsToStopTracking.Add(trackedAlarm);
-                    }
-                }
-                alarmsToStopTracking.ForEach(alarmId => cameraTrackedAlarms.Remove(alarmId));
+                HandleNewAlarms(camera, alarms);
             }
             catch
             {
@@ -488,10 +529,23 @@ internal class MqttPublisher : IMqttPublisher
 
     public void Dispose()
     {
-        if (mqttClient != null && mqttClient.IsConnected)
+        try
         {
-            mqttClient.Disconnect();
+            Shutdown().Wait();
+            if (mqttClient != null && mqttClient.IsConnected)
+            {
+                mqttClient.Disconnect();
+            }
         }
+        catch { }
+    }
+
+    public async Task Shutdown()
+    {
+        if (ezvizConfig.EnablePushNotifications && ezvizClient != null)
+        {
+            await ezvizClient.Shutdown();
+        }        
     }
 }
 
