@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{A6EC904F
 		build-docker.sh = build-docker.sh
 		docker-compose.yml = docker-compose.yml
 		Dockerfile = Dockerfile
+		Dockerfile-arm = Dockerfile-arm
 		publish-docker-amd64.sh = publish-docker-amd64.sh
 		publish-docker-arm.sh = publish-docker-arm.sh
 		publish-docker.sh = publish-docker.sh
