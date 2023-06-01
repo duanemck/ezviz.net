@@ -16,7 +16,7 @@ public class Device
     [JsonPropertyName("configuration_url")]
     public string? ConfigurationUrl { get; set; }
 
-    public ICollection<Tuple<string, string>> Connections { get; set; } = new List<Tuple<string, string>>();
+    public IEnumerable<string[]> Connections { get; set; } = new List<string[]>();
 
     [JsonPropertyName("hw_version")]
     public string? HardwareVersion { get; set; }

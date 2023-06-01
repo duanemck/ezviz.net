@@ -78,6 +78,8 @@ internal class MqttPublisher : IMqttPublisher
         jsonSerializationOptions = new JsonSerializerOptions()
         {
             WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
             Converters =
                 {
                     new BooleanConvertor(jsonOptions.Value)
@@ -158,7 +160,8 @@ internal class MqttPublisher : IMqttPublisher
                 new Availability(LwtTopicForCamera(camera.SerialNumber), mqttConfig.ServiceLwtOnlineMessage, mqttConfig.ServiceLwtOfflineMessage)
             },
             Icon = "mdi:cctv",
-            ImageEncoding = "b64"
+            ImageEncoding = "b64",
+            EntityCategory = "config"
         };
 
         return haCamera;
@@ -166,9 +169,9 @@ internal class MqttPublisher : IMqttPublisher
 
     private HADevice MapCameraToDevice(Camera camera)
     {
-        return new HADevice($"ezviz_{camera.SerialNumber}", camera.DeviceInfo.Name, "DuaneMck Ezviz", camera.DeviceType)
+        return new HADevice($"ezviz_{camera.SerialNumber}", camera.DeviceInfo.Name, "Ezviz", camera.DeviceType)
         {
-            Connections = new List<Tuple<string, string>> { new Tuple<string, string>("MAC", camera.MacAddress ?? "") },
+            Connections = new List<string[]> { new string[] { "MAC", camera.MacAddress ?? "" } },
             SoftwareVersion = camera.Version
         };
     }
@@ -194,8 +197,10 @@ internal class MqttPublisher : IMqttPublisher
              * 
              */
             var haCamera = MapCameraToHA(camera, haDevice);
-            SendMqtt(MapDiscoveryTopic("camera", haCamera), haCamera, true);
 
+            var dataString = JsonSerializer.Serialize(haCamera, jsonSerializationOptions);
+            logger.LogInformation(dataString);
+            SendMqtt(MapDiscoveryTopic("camera", haCamera), haCamera, true);
 
             /*
              * Options Sound level
@@ -204,7 +209,7 @@ internal class MqttPublisher : IMqttPublisher
              * Switch Upgrade In Progress
              * Sensor Upgrade Percent
              * Switch Sleeping
-             * Switch Audio Enabled
+             * Swsenitch Audio Enabled
              * Switch Infrared enabled
              * Switch Status LED enabled
              * Switch Mobile trackign enabled
