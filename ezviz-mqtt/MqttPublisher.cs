@@ -125,7 +125,7 @@ internal class MqttPublisher : IMqttPublisher
     }
 
     private void HandlePushedAlarmMessage(Alarm alarm)
-    
+    {
         var camera = cameras.FirstOrDefault(camera => camera.SerialNumber == alarm.DeviceSerial);
         if (camera == null)
         {
@@ -133,10 +133,10 @@ internal class MqttPublisher : IMqttPublisher
         }
         HandleNewAlarms(camera, alarm).Wait();
     }
-    
+
     private string GetTopic(Topics key)
-    {    
-                return mqttTopics[key.ToString()];
+    {
+        return mqttTopics[key.ToString()];
     }
 
     private string GetTopic(Topics key, Camera camera)
@@ -185,7 +185,7 @@ internal class MqttPublisher : IMqttPublisher
         foreach (var camera in cameras)
         {
             var haDevice = MapCameraToDevice(camera);
-            
+
             //Attributes
             /* WAN Ip
              * MacAddress
@@ -194,7 +194,7 @@ internal class MqttPublisher : IMqttPublisher
              * 
              */
             var haCamera = MapCameraToHA(camera, haDevice);
-            SendMqtt(MapDiscoveryTopic("camera",haCamera), haCamera, true);
+            SendMqtt(MapDiscoveryTopic("camera", haCamera), haCamera, true);
 
 
             /*
@@ -374,7 +374,7 @@ internal class MqttPublisher : IMqttPublisher
         return TrackedAlarms[serialNumber];
     }
 
-    private Task HandleNewAlarms(Camera camera,Alarm alarm)
+    private Task HandleNewAlarms(Camera camera, Alarm alarm)
     {
         return HandleNewAlarms(camera, new List<Alarm> { alarm }, false);
     }
@@ -393,8 +393,8 @@ internal class MqttPublisher : IMqttPublisher
                     if (alarm.DownloadedPicture == null)
                     {
                         alarm.DownloadedPicture = await ezvizClient.GetAlarmImageBase64(alarm);
-`                    }
-                            SendMqttForCamera(Topics.Alarm, camera.SerialNumber, alarm);
+                    }
+                    SendMqttForCamera(Topics.Alarm, camera.SerialNumber, alarm);
                 }
             }
             else
@@ -428,7 +428,7 @@ internal class MqttPublisher : IMqttPublisher
             {
                 return;
             }
-            
+
             try
             {
                 logger.LogInformation($"Checking [{camera.Name}] for alarms");
@@ -545,7 +545,7 @@ internal class MqttPublisher : IMqttPublisher
         if (ezvizConfig.EnablePushNotifications && ezvizClient != null)
         {
             await ezvizClient.Shutdown();
-        }        
+        }
     }
 }
 
