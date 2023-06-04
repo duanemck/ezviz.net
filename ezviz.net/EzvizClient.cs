@@ -471,6 +471,10 @@ public class EzvizClient : IEzvizClient
         }        
     }
 
+    public Task CheckPushConnection()
+    {
+        return pushManager.OpenPushNotificationStream();
+    }
 }
 
 internal class Token

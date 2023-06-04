@@ -6,6 +6,7 @@ internal enum Topics
     Alarm,
     LWT,
     Image,
+    Config,
     GlobalCommand,
     GlobalStatus
 }

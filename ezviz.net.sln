@@ -28,8 +28,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{A6EC904F
 		publish-docker.sh = publish-docker.sh
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ha-autodiscovery.net", "ha-autodiscovery.net\ha-autodiscovery.net.csproj", "{8327B197-7ED2-48FE-8AC9-753AD3D88DAC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,10 +58,6 @@ Global
 		{724AC69B-74F4-4965-BB4F-E0C315E99F4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{724AC69B-74F4-4965-BB4F-E0C315E99F4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{724AC69B-74F4-4965-BB4F-E0C315E99F4E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8327B197-7ED2-48FE-8AC9-753AD3D88DAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8327B197-7ED2-48FE-8AC9-753AD3D88DAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8327B197-7ED2-48FE-8AC9-753AD3D88DAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8327B197-7ED2-48FE-8AC9-753AD3D88DAC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

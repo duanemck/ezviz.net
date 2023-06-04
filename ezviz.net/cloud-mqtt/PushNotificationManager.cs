@@ -42,8 +42,12 @@ namespace ezviz_mqtt.cloud_mqtt
             await OpenPushNotificationStream();
         }
 
-        private async Task OpenPushNotificationStream()
+        public async Task OpenPushNotificationStream()
         {
+            if (mqttClient == null || mqttClient.IsConnected)
+            {
+                return;
+            }
             await RegisterForEzvizPush();
             await StartEzvizPush();
 
@@ -76,7 +80,13 @@ namespace ezviz_mqtt.cloud_mqtt
             logger.LogInformation("MQTT Connection Closed");
             if (!shuttingDown)
             {
-                OpenPushNotificationStream().Wait();
+                try
+                {
+                    OpenPushNotificationStream().Wait();
+                }
+                catch
+                {
+                }
             }
         }
 

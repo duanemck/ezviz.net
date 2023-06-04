@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ezviz.net\ezviz.net.csproj" />
-    <ProjectReference Include="..\ha-autodiscovery.net\ha-autodiscovery.net.csproj" />
   </ItemGroup>
 
 </Project>

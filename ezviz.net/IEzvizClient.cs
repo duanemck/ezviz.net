@@ -18,6 +18,7 @@ namespace ezviz.net
         public bool LogAllResponses { get; set; }
 
         public Task EnablePushNotifications(IPushNotificationLogger logger, Action<Alarm> messageHandler);
+        public Task CheckPushConnection();
         public Task Shutdown();
     }
 }

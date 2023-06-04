@@ -7,4 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ezviz.net\ezviz.net.csproj" />
+  </ItemGroup>
+
 </Project>
