@@ -50,7 +50,8 @@ namespace ezviz.net.domain
         /// Alarm intensity level
         /// </summary>
         public AlarmSound? AlarmSoundLevel => Status?.AlarmSoundMode;
-                
+
+        public string? AlarmSoundLevelName => AlarmSoundLevel?.ToString();
         /// <summary>
         /// Is an armed/disarmed schedule enabled for this camera
         /// </summary>
@@ -152,6 +153,7 @@ namespace ezviz.net.domain
         /// Sensitivty of motion detection
         /// </summary>
         public DetectionSensitivityLevel DetectionSensitivity { get; private set; }
+        public string DetectionSensitivityLevelName => DetectionSensitivity.ToString();
 
         /// <summary>
         /// Camera is online with the ezviz API
@@ -169,17 +171,19 @@ namespace ezviz.net.domain
         /// <summary>
         /// SD Card space remaining in GB
         /// </summary>
-        public decimal DiskCapacityGB => DiskCapacityMB / 1024;
+        public decimal DiskCapacityGB => Math.Round( DiskCapacityMB / 1024, 2);
 
         /// <summary>
         /// Motion detection method (human/vehicle/both/regular motion)
         /// </summary>
         public AlarmDetectionMethod AlarmDetectionMethod { get; private set; }
-        
+        public string AlarmDetectionMethodName => AlarmDetectionMethod.ToString();
+
         /// <summary>
         /// Image filters being applied
         /// </summary>
         public DisplayMode ImageDisplayMode { get; private set; }
+        public string ImageDisplayModeName => ImageDisplayMode.ToString();
 
         /// <summary>
         /// Most recent alarm raised on this camera

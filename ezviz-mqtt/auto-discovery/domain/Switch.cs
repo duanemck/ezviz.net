@@ -8,7 +8,7 @@ public class Switch : Entity
     {
         CommandTopic = commandTopic;
         StateTopic = stateTopic;
-        EntityCategory = "config";
+        //EntityCategory = "config";
     }
 
     [JsonPropertyName("command_topic")]

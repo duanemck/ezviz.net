@@ -34,12 +34,17 @@ internal class BooleanConvertor : JsonConverter<bool>
                 writer.WriteBooleanValue(value);
                 break;
             case BooleanSerializationTypes.String:
-                writer.WriteStringValue(value ? this.options.SerializeTrueAs : this.options.SerializeFalseAs);
+                writer.WriteStringValue(SerializeBoolean(value));
                 break;
             case BooleanSerializationTypes.Numbers:
                 writer.WriteNumberValue(value ? 1 : 0);
                 break;
         }
+    }
+
+    public string SerializeBoolean(bool value)
+    {
+        return value ? this.options.SerializeTrueAs : this.options.SerializeFalseAs;
     }
 }
 

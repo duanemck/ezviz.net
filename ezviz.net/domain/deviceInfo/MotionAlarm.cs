@@ -2,6 +2,11 @@
 {
     public class MotionAlarm
     {
+        public  override string ToString()
+        {
+            return $"{LastAlarmTime:yyyy/MM/dd HH:mm}";
+        }   
+
         public bool MotionTriggerActive { get; set; }
         public int SecondsSinceLastTrigger { get; set; }
         public DateTime LastAlarmTime { get; set; }

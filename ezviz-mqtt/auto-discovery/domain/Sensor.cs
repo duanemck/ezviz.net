@@ -12,5 +12,11 @@ public class Sensor : Entity
     
     [JsonPropertyName("state_topic")]
     public string StateTopic { get; }
-    
+
+    [JsonPropertyName("device_class")]
+    public string? DeviceClass { get; set; }
+
+    [JsonPropertyName("unit_of_measurement")]
+    public string? UnitOfMeasurement { get; set; }
+
 }

@@ -14,6 +14,7 @@ using ezviz.net.domain;
 using Camera = ezviz_mqtt.auto_discovery.domain.Camera;
 using Sensor = ezviz_mqtt.auto_discovery.domain.Sensor;
 using Switch = ezviz_mqtt.auto_discovery.domain.Switch;
+using System.Xml.Linq;
 
 namespace ezviz_mqtt.auto_discovery;
 
@@ -28,7 +29,7 @@ internal class AutoDiscoveryManager
 
     JsonSerializerOptions jsonSerializationOptions = new JsonSerializerOptions()
     {
-        WriteIndented = true,
+        WriteIndented = false,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
     };
@@ -51,15 +52,14 @@ internal class AutoDiscoveryManager
         SendDiscoveryMessage(MapToSelect<AlarmDetectionMethod>(camera, device));
         SendDiscoveryMessage(MapToSelect<DetectionSensitivityLevel>(camera, device));
 
-        SendDiscoveryMessage(MapToSensor("upgrade_available", "Upgrade Available", camera, device));
-        SendDiscoveryMessage(MapToSensor("upgrade_in_progress", "Upgrade In Progress", camera, device));
-        SendDiscoveryMessage(MapToSensor("upgrade_percent", "Upgrade Percent", camera, device));
-        SendDiscoveryMessage(MapToSensor("rtsp_encrypted", "RTSP Encrypted", camera, device));
-        SendDiscoveryMessage(MapToSensor("battery_level", "Battery Level", camera, device));
+        SendDiscoveryMessage(MapToBinarySensor("upgrade_available", "Upgrade Available", camera, device));
+        SendDiscoveryMessage(MapToBinarySensor("upgrade_in_progress", "Upgrade In Progress", camera, device));
+        SendDiscoveryMessage(MapToNumberSensor("upgrade_percent", "Upgrade Percent",null,"%", camera, device));
+        SendDiscoveryMessage(MapToBinarySensor("rtsp_encrypted", "RTSP Encrypted", camera, device));
+        SendDiscoveryMessage(MapToNumberSensor("battery_level", "Battery Level", "battery", "%", camera, device));
         SendDiscoveryMessage(MapToSensor("pir_status", "PiR Status", camera, device));
-        SendDiscoveryMessage(MapToSensor("disk_capacity", "Disk Capacity", camera, device));
+        SendDiscoveryMessage(MapToNumberSensor("disk_capacity", "Disk Capacity", "data_size", "GB", camera, device));
         SendDiscoveryMessage(MapToSensor("last_alarm", "Last Alarm", camera, device));
-
 
         SendDiscoveryMessage(MapToSwitch("alarm_schedule_enabled", "Alarm Schedule Enabled", camera, device));
         SendDiscoveryMessage(MapToSwitch("sleeping", "Sleeping", camera, device));
@@ -89,8 +89,6 @@ internal class AutoDiscoveryManager
         }
     }
 
-
-
     private Device MapCameraToDevice(EzvizCamera camera)
     {
         return new Device($"ezviz_{camera.SerialNumber}", camera.DeviceInfo.Name, "Ezviz", camera.DeviceType)
@@ -119,12 +117,13 @@ internal class AutoDiscoveryManager
         return Camera;
     }
 
-    private Select MapToSelect<T>(EzvizCamera camera, Device device)
+    private Select MapToSelect<T>(EzvizCamera camera, Device device) where T : struct
     {
         var configItem = typeof(T).Name;
         var options = Enum.GetNames(typeof(T));
-        var topic = topics.GetConfigTopic(configItem, camera);
-        return new Select($"ezviz_{camera.SerialNumber}_{configItem.ToLower()}", $"{camera.DeviceInfo.Name} {configItem}", device, topic, topic, options)
+        var stateTopic = topics.GetStatusTopic<T>(camera);
+        var commandTopic = topics.GetStatusSetTopic<T>(camera);
+        return new Select($"ezviz_{camera.SerialNumber}_{configItem.ToLower()}", $"{camera.DeviceInfo.Name} {configItem}", device, commandTopic, stateTopic, options)
         {
             Availability = GetAvailability(camera.SerialNumber),
         };
@@ -132,8 +131,9 @@ internal class AutoDiscoveryManager
 
     private Switch MapToSwitch(string name, string friendlyName, EzvizCamera camera, Device device)
     {
-        var topic = topics.GetConfigTopic(name, camera);
-        return new Switch($"ezviz_{camera.SerialNumber}_{name}", $"{camera.DeviceInfo.Name} {friendlyName}", device, topic, topic)
+        var stateTopic = topics.GetStatusTopic(name, camera);
+        var commandTopic = topics.GetStatusSetTopic(name, camera);
+        return new Switch($"ezviz_{camera.SerialNumber}_{name}", $"{camera.DeviceInfo.Name} {friendlyName}", device, commandTopic, stateTopic)
         {
             Availability = GetAvailability(camera.SerialNumber),
         };
@@ -141,12 +141,31 @@ internal class AutoDiscoveryManager
 
     private Sensor MapToSensor(string name, string friendlyName, EzvizCamera camera, Device device)
     {
-        var topic = topics.GetConfigTopic(name, camera);
+        var topic = topics.GetStatusTopic(name, camera);
         return new Sensor($"ezviz_{camera.SerialNumber}_{name}", $"{camera.DeviceInfo.Name} {friendlyName}", device, topic)
         {
             Availability = GetAvailability(camera.SerialNumber),
         };
     }
+
+    private Sensor MapToNumberSensor(string name, string friendlyName, string? deviceClass, string? unitOfMeasure, EzvizCamera camera, Device device)
+    {
+        var sensor = MapToSensor(name, friendlyName, camera, device);
+        sensor.DeviceClass = deviceClass;
+        sensor.UnitOfMeasurement = unitOfMeasure;
+        return sensor;
+
+    }
+
+    private Binary_Sensor MapToBinarySensor(string name, string friendlyName, EzvizCamera camera, Device device)
+    {
+        var topic = topics.GetStatusTopic(name, camera);
+        return new Binary_Sensor($"ezviz_{camera.SerialNumber}_{name}", $"{camera.DeviceInfo.Name} {friendlyName}", device, topic)
+        {
+            Availability = GetAvailability(camera.SerialNumber),
+        };
+    }
+
 
     private string MapDiscoveryTopic(Entity entity)
     {

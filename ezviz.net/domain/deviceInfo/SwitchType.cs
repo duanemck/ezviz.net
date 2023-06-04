@@ -38,7 +38,7 @@ public enum SwitchType
     LightFlicker = 301,
     Unknown302 = 302,
     AlarmLight = 303,
-    UnknownType301 = 304,
+    UnknownType304 = 304,
     AlarmLightRelevance = 305,
     DeviceHumanRelateLight = 41,
     TamperAlarm = 306,

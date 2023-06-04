@@ -4,11 +4,13 @@ using ezviz.net.domain.deviceInfo;
 using ezviz.net.exceptions;
 using ezviz.net.util;
 using ezviz_mqtt.auto_discovery;
+using ezviz_mqtt.auto_discovery.domain;
 using ezviz_mqtt.config;
 using ezviz_mqtt.health;
 using ezviz_mqtt.util;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using uPLibrary.Networking.M2Mqtt;
@@ -76,7 +78,7 @@ internal class MqttPublisher : IMqttPublisher
 
         jsonSerializationOptions = new JsonSerializerOptions()
         {
-            WriteIndented = true,
+            //WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
             Converters =
@@ -137,14 +139,42 @@ internal class MqttPublisher : IMqttPublisher
 
 
 
-    private void SendMqttForCamera(Topics topicKey, string? serial, object data, bool retain = false)
+    private async Task SendMqttForCamera(Camera camera)
     {
-        if (serial == null)
-        {
-            throw new ArgumentNullException(nameof(serial));
-        }
-        var topic = mqttTopics.GetTopic(topicKey, serial);
-        SendMqtt(topic, data, retain);
+        var topic = mqttTopics.GetTopic(Topics.Stat, camera.SerialNumber);
+        SendMqtt(topic, camera);
+
+        SendRawMqtt(mqttTopics.GetStatusTopic<AlarmSound>(camera), (camera?.AlarmSoundLevel ?? AlarmSound.Unknown).ToString());
+        SendRawMqtt(mqttTopics.GetStatusTopic<AlarmDetectionMethod>(camera), (camera?.AlarmDetectionMethod ?? AlarmDetectionMethod.Unknown).ToString());
+        SendRawMqtt(mqttTopics.GetStatusTopic<DetectionSensitivityLevel>(camera), (camera?.DetectionSensitivity ?? DetectionSensitivityLevel.Unknown).ToString());
+
+        var booleanConverter = new BooleanConvertor(jsonConfig);
+        SendRawMqtt(mqttTopics.GetStatusTopic("upgrade_available", camera), booleanConverter.SerializeBoolean(camera.UpgradeAvailable));
+        SendRawMqtt(mqttTopics.GetStatusTopic("upgrade_in_progress", camera), booleanConverter.SerializeBoolean(camera.UpgradeInProgress));
+        SendRawMqtt(mqttTopics.GetStatusTopic("upgrade_percent", camera), camera.UpgradePercent);
+        SendRawMqtt(mqttTopics.GetStatusTopic("rtsp_encrypted", camera), booleanConverter.SerializeBoolean(camera.IsEncrypted));
+        SendRawMqtt(mqttTopics.GetStatusTopic("battery_level", camera), camera.BatteryLevel);
+        SendRawMqtt(mqttTopics.GetStatusTopic("pir_status", camera), camera.PirStatus);
+        SendRawMqtt(mqttTopics.GetStatusTopic("disk_capacity", camera), camera.DiskCapacityGB);
+
+        //More detail in attributes
+        SendRawMqtt(mqttTopics.GetStatusTopic("last_alarm", camera), (await camera.GetLastAlarm()).ToString());
+
+        SendRawMqtt(mqttTopics.GetStatusTopic("alarm_schedule_enabled", camera), booleanConverter.SerializeBoolean(camera.AlarmScheduleEnabled));
+        SendRawMqtt(mqttTopics.GetStatusTopic("sleeping", camera), booleanConverter.SerializeBoolean(camera.Sleeping));
+        SendRawMqtt(mqttTopics.GetStatusTopic("audio_enabled", camera), booleanConverter.SerializeBoolean(camera.AudioEnabled));
+        SendRawMqtt(mqttTopics.GetStatusTopic("infrared_enabled", camera), booleanConverter.SerializeBoolean(camera.InfraredEnabled));
+        SendRawMqtt(mqttTopics.GetStatusTopic("status_led_enabled", camera), booleanConverter.SerializeBoolean(camera.StateLedEnabled));
+        SendRawMqtt(mqttTopics.GetStatusTopic("motion_tracking_enabled", camera), booleanConverter.SerializeBoolean(camera.MobileTrackingEnabled));
+        SendRawMqtt(mqttTopics.GetStatusTopic("notify_when_offline", camera), booleanConverter.SerializeBoolean(camera.NotifyOffline));
+        SendRawMqtt(mqttTopics.GetStatusTopic("armed", camera), booleanConverter.SerializeBoolean(camera.Armed));
+        SendRawMqtt(mqttTopics.GetStatusTopic("trigger_alarm", camera), booleanConverter.SerializeBoolean(false));
+    }
+
+    private void SendMqttForAlarm(Camera camera, Alarm alarm)
+    {
+        var topic = mqttTopics.GetTopic(Topics.Alarm, camera.SerialNumber);
+        SendMqtt(topic, alarm);
     }
 
     private void SendLwtForService(string message)
@@ -163,6 +193,11 @@ internal class MqttPublisher : IMqttPublisher
         }
 
         SendMqtt(mqttTopics.GetLwtTopicForCamera(serial), message, true, false);
+    }
+
+    private void SendRawMqtt(string topic, object data)
+    {
+        SendMqtt(topic, data, false, false);
     }
 
     private void SendMqtt(string topic, object data, bool retain = false, bool jsonSerialize = true)
@@ -259,7 +294,7 @@ internal class MqttPublisher : IMqttPublisher
             {
                 return;
             }
-            SendMqttForCamera(Topics.Status, camera.SerialNumber, camera);
+            await SendMqttForCamera(camera);
             SendLwtForCamera(camera.SerialNumber, (camera.Online ?? false) ? mqttConfig.ServiceLwtOnlineMessage : mqttConfig.ServiceLwtOfflineMessage);
         }
         logger.LogInformation("Polling done, published details of {0} cameras", cameras.Count());
@@ -294,7 +329,7 @@ internal class MqttPublisher : IMqttPublisher
                     {
                         alarm.DownloadedPicture = await ezvizClient.GetAlarmImageBase64(alarm);
                     }
-                    SendMqttForCamera(Topics.Alarm, camera.SerialNumber, alarm);
+                    SendMqttForAlarm(camera, alarm);
                 }
             }
             else
@@ -335,7 +370,7 @@ internal class MqttPublisher : IMqttPublisher
                 var alarms = (await camera.GetAlarms()).Where(a => a.IsCheck == 0);
                 logger.LogDebug($"Found {alarms.Count()} unread alarms");
 
-                HandleNewAlarms(camera, alarms);
+                await HandleNewAlarms(camera, alarms);
             }
             catch
             {

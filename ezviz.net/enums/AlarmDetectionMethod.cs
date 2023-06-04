@@ -8,6 +8,7 @@ namespace ezviz.net.domain
 {
     public enum AlarmDetectionMethod
     {
+        Unknown = -1,
         HumanOrVehicle = 0,
         Human = 1,
         Vehicle = 2,

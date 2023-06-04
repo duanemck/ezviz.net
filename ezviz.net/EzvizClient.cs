@@ -127,13 +127,18 @@ public class EzvizClient : IEzvizClient
             .Select(async device => await ParseCamera(device, response))
             .Select(device => device.Result)
             .Where(device => device != null)
-            .Cast<Camera>();
+            .Cast<Camera>()
+            .ToList();
+ 
 
-        foreach (var c in cameras.Where(c => c.Online ?? false))
+        foreach (var c in cameras)
         {
             try
             {
-                await c.GetExtraInformation();
+                if (c.Online ?? false)
+                {
+                    await c.GetExtraInformation();
+                }
             }
             catch
             {

@@ -2,6 +2,7 @@
 internal enum Topics
 {
     Command,
+    Stat,
     Status,
     Alarm,
     LWT,

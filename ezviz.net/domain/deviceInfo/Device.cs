@@ -31,7 +31,10 @@ public class Device
             KMS = Deserialize<KMS>(response.KMS[serial]);
             Status = Deserialize<Status>(response.Status[serial]);
             TimePlans = Deserialize<TimePlan[]>(response.Time_Plan[serial]);
-            QOS = Deserialize<QOS>(response.QOS[serial]);
+            if (response.QOS != null)
+            {
+                QOS = Deserialize<QOS>(response.QOS[serial]);
+            }
             NoDisturb = Deserialize<NoDisturb>(response.NoDisturb[serial]);
             if (response.Upgrade != null)
             {

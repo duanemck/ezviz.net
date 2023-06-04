@@ -21,9 +21,24 @@ namespace ezviz_mqtt.util
             return GetTopic(key, camera.SerialNumber);
         }
 
-        public string GetConfigTopic(string configItem, Camera camera)
+        public string GetStatusTopic<T>(Camera camera) where T : struct
         {
-            return GetTopic(Topics.Config, camera.SerialNumber).Replace("{configItem}", configItem.ToLower());
+            return GetStatusTopic(typeof(T).Name.ToLower(), camera);
+        }
+
+        public string GetStatusTopic(string configItem, Camera camera)
+        {
+            return GetTopic(Topics.Status, camera.SerialNumber).Replace("{entity}", configItem.ToLower());
+        }
+
+        public string GetStatusSetTopic<T>(Camera camera) where T : struct
+        {
+            return GetStatusSetTopic(typeof(T).Name.ToLower(), camera);
+        }
+
+        public string GetStatusSetTopic(string configItem, Camera camera)
+        {
+            return GetTopic(Topics.Status, camera.SerialNumber).Replace("{entity}", $"{configItem.ToLower()}_set");
         }
 
         public string GetTopic(Topics key, string? serialNumber)
