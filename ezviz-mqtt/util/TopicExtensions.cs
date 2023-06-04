@@ -38,7 +38,7 @@ namespace ezviz_mqtt.util
 
         public string GetStatusSetTopic(string configItem, Camera camera)
         {
-            return GetTopic(Topics.Status, camera.SerialNumber).Replace("{entity}", $"{configItem.ToLower()}_set");
+            return GetTopic(Topics.Status, camera.SerialNumber).Replace("{entity}", $"{configItem.ToLower()}/set");
         }
 
         public string GetTopic(Topics key, string? serialNumber)

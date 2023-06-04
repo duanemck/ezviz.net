@@ -44,6 +44,7 @@ internal class MqttPublisher : IMqttPublisher
     private readonly string _globalCommandTopic;
     private readonly string _globalStateTopic;
     private readonly string _deviceCommandTopic;
+    private readonly string _deviceStatusTopic;
 
 
     private bool discoveryMessagesSent = false;
@@ -75,6 +76,7 @@ internal class MqttPublisher : IMqttPublisher
         _globalCommandTopic = mqttTopics.GetTopic(Topics.GlobalCommand);
         _deviceCommandTopic = mqttTopics.GetTopic(Topics.Command, "+");
         _globalStateTopic = mqttTopics.GetTopic(Topics.GlobalStatus);
+        _deviceStatusTopic = $"{mqttTopics.GetTopic(Topics.Status, "+").Replace("{entity}", "+")}/set";
 
         jsonSerializationOptions = new JsonSerializerOptions()
         {
@@ -153,12 +155,12 @@ internal class MqttPublisher : IMqttPublisher
         SendRawMqtt(mqttTopics.GetStatusTopic("upgrade_in_progress", camera), booleanConverter.SerializeBoolean(camera.UpgradeInProgress));
         SendRawMqtt(mqttTopics.GetStatusTopic("upgrade_percent", camera), camera.UpgradePercent);
         SendRawMqtt(mqttTopics.GetStatusTopic("rtsp_encrypted", camera), booleanConverter.SerializeBoolean(camera.IsEncrypted));
-        SendRawMqtt(mqttTopics.GetStatusTopic("battery_level", camera), camera.BatteryLevel);
+        SendRawMqtt(mqttTopics.GetStatusTopic("battery_level", camera), camera?.BatteryLevel);
         SendRawMqtt(mqttTopics.GetStatusTopic("pir_status", camera), camera.PirStatus);
         SendRawMqtt(mqttTopics.GetStatusTopic("disk_capacity", camera), camera.DiskCapacityGB);
 
         //More detail in attributes
-        SendRawMqtt(mqttTopics.GetStatusTopic("last_alarm", camera), (await camera.GetLastAlarm()).ToString());
+        SendRawMqtt(mqttTopics.GetStatusTopic("last_alarm", camera), (await camera?.GetLastAlarm())?.ToString());
 
         SendRawMqtt(mqttTopics.GetStatusTopic("alarm_schedule_enabled", camera), booleanConverter.SerializeBoolean(camera.AlarmScheduleEnabled));
         SendRawMqtt(mqttTopics.GetStatusTopic("sleeping", camera), booleanConverter.SerializeBoolean(camera.Sleeping));
@@ -195,13 +197,17 @@ internal class MqttPublisher : IMqttPublisher
         SendMqtt(mqttTopics.GetLwtTopicForCamera(serial), message, true, false);
     }
 
-    private void SendRawMqtt(string topic, object data)
+    private void SendRawMqtt(string topic, object? data)
     {
         SendMqtt(topic, data, false, false);
     }
 
-    private void SendMqtt(string topic, object data, bool retain = false, bool jsonSerialize = true)
+    private void SendMqtt(string topic, object? data, bool retain = false, bool jsonSerialize = true)
     {
+        if (data == null)
+        {
+            return;
+        }
 #pragma warning disable IL2026
         var dataString = jsonSerialize ? JsonSerializer.Serialize(data, jsonSerializationOptions) : data.ToString();
 #pragma warning restore IL2026
@@ -395,6 +401,10 @@ internal class MqttPublisher : IMqttPublisher
         logger.LogInformation("Subscribing to {0}", _globalCommandTopic);
         mqttClient.Subscribe(new[] { _globalCommandTopic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
 
+        logger.LogInformation("Subscribing to {0}", _deviceStatusTopic);
+        mqttClient.Subscribe(new[] { _deviceStatusTopic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+        
+
         serviceState.MqttConnected = true;
 
     }
@@ -437,6 +447,12 @@ internal class MqttPublisher : IMqttPublisher
                     }
                 }
                 break;
+            case MQTT_COMMAND_SET_STATE:
+                string entity = serial;
+                topicWithoutCommand = topicWithoutCommand.Replace($"/{entity}", "");
+                serial = topicWithoutCommand.Substring(topicWithoutCommand.LastIndexOf("/") + 1);
+                await HandleStateSet(serial, entity, message);
+                break;
             default:
                 logger.LogInformation($"Unknown MQTT command received {command}");
                 break;
@@ -445,6 +461,34 @@ internal class MqttPublisher : IMqttPublisher
 
     private const string MQTT_COMMAND_DEFENCEMODE = "defenceMode";
     private const string MQTT_COMMAND_ARMED = "armed";
+    private const string MQTT_COMMAND_SET_STATE = "set";
+
+    private async Task HandleStateSet(string serial, string stateEntity, string newValue)
+    {
+        logger.LogInformation($"Setting [{stateEntity}] for [{serial}] to [{newValue}]");
+        //Update device and then echo new state back
+
+        var device = cameras.FirstOrDefault(c => c.SerialNumber == serial);
+        if (device == null)
+        {
+            logger.LogError($"Could not update state, unknonw device [{serial}]");
+            return;
+        }
+        switch (stateEntity)
+        {
+            case "armed":
+                if (newValue == "ON")
+                {
+                    await device.Arm();
+                }else
+                {
+                    await device.Disarm();
+                }
+                SendRawMqtt(mqttTopics.GetStatusTopic("armed", device), newValue);
+                break;
+        }
+
+    }
 
     private async Task HandleGlobalCommand(string topic, string message)
     {
