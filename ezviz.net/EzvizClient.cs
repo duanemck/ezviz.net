@@ -24,7 +24,7 @@ public class EzvizClient : IEzvizClient
     private SystemConfigInfo systemConfig = null!;
 
     private SessionIdProvider sessionIdProvider = new SessionIdProvider();
-    private PushNotificationManager pushManager;
+    private PushNotificationManager pushManager = null!;
 
     private IEzvizApi api = null!;
 

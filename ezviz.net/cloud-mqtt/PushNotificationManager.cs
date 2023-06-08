@@ -6,7 +6,6 @@ using ezviz.net.util;
 using Refit;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
@@ -19,11 +18,11 @@ namespace ezviz_mqtt.cloud_mqtt
         private readonly IEzvizClient client;
         private readonly IPushNotificationLogger logger;
         private readonly Action<Alarm> messageHandler;
-        private IEzvizPushApi pushApi;
-        private MqttClient mqttClient;
-        private EzvizUser user;
-        private LoginSession session;
-        private SystemConfigInfo systemConfig;
+        private IEzvizPushApi pushApi = null!;
+        private MqttClient mqttClient = null!;
+        private EzvizUser user = null!;
+        private LoginSession session = null!;
+        private SystemConfigInfo systemConfig = null!;
         private bool shuttingDown = false;
 
         public PushNotificationManager(IEzvizClient client, IPushNotificationLogger logger, Action<Alarm> messageHandler)
@@ -180,10 +179,15 @@ namespace ezviz_mqtt.cloud_mqtt
             {
                 string utfString = Encoding.UTF8.GetString(e.Message, 0, e.Message.Length);
                 logger.LogInformation($"Received message via MQTT from [{e.Topic}] => {utfString}");
+#pragma warning disable IL2026 
                 var message = JsonSerializer.Deserialize<PushMessage>(utfString, deserializationOptions);
-                var alarm = new Alarm(message);
-                alarm.DownloadedPicture = client.GetAlarmImageBase64(alarm).Result;
-                messageHandler(alarm);
+#pragma warning restore IL2026
+                if (message != null)
+                {
+                    var alarm = new Alarm(message);
+                    alarm.DownloadedPicture = client.GetAlarmImageBase64(alarm).Result;
+                    messageHandler(alarm);
+                }
             }
             catch
             {

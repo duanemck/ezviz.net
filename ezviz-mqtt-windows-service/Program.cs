@@ -1,6 +1,8 @@
-using ezviz.net.util;
 using ezviz_mqtt;
+using ezviz_mqtt.util;
+using EnumX = ezviz_mqtt.util.EnumX;
 using ezviz_windows_service;
+
 
 await Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration(app =>
@@ -11,12 +13,20 @@ await Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((hostContext, services) =>
     {
+        LogLevel logLevel = EnumX.Parse<LogLevel>(hostContext.Configuration.GetSection("Logging")["LogLevel"] ?? "Information");
         services
             .AddWindowsLogging()
-            .AddLogging(c =>
+            .AddLogging(config =>
             {
-                c.AddFile(hostContext.Configuration.GetSection("Logging"));
+                
+                config
+                    .ClearProviders()
+                    .AddProvider(new CustomLoggerProvider())
+                    .AddFile(hostContext.Configuration.GetSection("Logging"))
+                    .AddFilter("Microsoft", LogLevel.None)
+                    .AddFilter("System", LogLevel.None);
             })
+            .Configure<LoggerFilterOptions>(options => options.MinLevel = logLevel)
             .AddMqttPublisher<Worker>(hostContext.Configuration);            
     })
     .UseWindowsService(options =>

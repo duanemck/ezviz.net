@@ -7,10 +7,10 @@ namespace ezviz_systemd.net
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IMqttPublisher publisher;
+        private readonly IMqttWorker publisher;
         private readonly MqttServiceState serviceState;
 
-        public Worker(ILogger<Worker> logger, IHostLifetime lifetime, IMqttPublisher publisher, MqttServiceState serviceState)
+        public Worker(ILogger<Worker> logger, IHostLifetime lifetime, IMqttWorker publisher, MqttServiceState serviceState)
         {
             _logger = logger;
             this.publisher = publisher;

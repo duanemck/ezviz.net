@@ -15,10 +15,11 @@ namespace ezviz.net.tests
         //[Ignore("Manual Test")]
         public void TestThatSampleJsonCanBeParsed()
         {
+#pragma warning disable CS8604
             //Copy sample JSON from the API into these files before testing
             var deviceInfo = JsonSerializer.Deserialize<EzvizDeviceInfo>(Assembly.GetExecutingAssembly().GetManifestResourceStream("ezviz.net.tests.responses.deviceInfo.json"));
             var pagedResponse = JsonSerializer.Deserialize<PagedListResponse>(Assembly.GetExecutingAssembly().GetManifestResourceStream("ezviz.net.tests.responses.pagedResponse.json"));
-
+#pragma warning restore CS8604
             var mockApi = Substitute.For<IEzvizApi>();
             var mockLogger = Substitute.For<IRequestResponseLogger>();
             var sessionIdProvider = new SessionIdProvider()
