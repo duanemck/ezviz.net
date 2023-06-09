@@ -11,7 +11,7 @@ namespace ezviz_mqtt.commands.publish_state
 
         public override void Publish(Camera camera)
         {
-            //TODO More detail in attributes
+            //TODO: More detail in attributes
              mqttHandler.SendRawMqtt(topics.GetStatusTopic(StateEntities.LastAlarm, camera), (camera?.GetLastAlarm().Result)?.ToString());
         }
     }

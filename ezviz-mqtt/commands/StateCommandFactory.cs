@@ -15,36 +15,12 @@ namespace ezviz_mqtt.commands
 
         public StateCommandFactory(IEzvizClient client, TopicExtensions topics, IMqttHandler mqttHandler, IOptions<JsonOptions> jsonOptions)
         {
-            StateUpdateCommands = new Dictionary<string, IStateUpdateCommand>
-            {
-                //{ StateEntities.AlarmDetectionMethod, new AlarmDetectionMethodCommand(client, topics, publisher) },
-                //{ StateEntities.AlarmScheduleEnabled, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.AlarmSound, new ArmDisarmCommand(client, topics, publisher) },
-                { StateEntities.Armed, new ArmDisarmCommand(client, topics, mqttHandler) },
-                //{ StateEntities.AudioEnabled, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.BatteryLevel, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.DetectionSensitivityLevel, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.DiskCapacity, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.InfraredEnabled, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.LastAlarm, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.MobileTrackingEnabled, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.NotifyWhenOffline, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.PirStatus, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.RtspEncrypted, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.Sleeping, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.StatusLedEnabled, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.UpgradeAvailable, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.UpgradeInProgress, new ArmDisarmCommand(client, topics, publisher) },
-                //{ StateEntities.UpgradePercent, new ArmDisarmCommand(client, topics, publisher) },
-
-            };
-
             var booleanConverter = new BooleanConvertor(jsonOptions.Value);
-            StatePublishCommands = new Dictionary<string, IStatePublishCommand>
+            StatePublishCommands = new Dictionary<string, IStatePublishCommand>(StringComparer.OrdinalIgnoreCase)
             {
                 { StateEntities.AlarmDetectionMethod, new AlarmDetectionMethodCommand(topics,booleanConverter, mqttHandler) },
                 { StateEntities.AlarmScheduleEnabled, new AlarmScheduleEnabledCommand(topics,booleanConverter, mqttHandler) },
-                { StateEntities.AlarmSound, new ArmedCommand(topics,booleanConverter, mqttHandler) },
+                { StateEntities.AlarmSound, new AlarmSoundCommand(topics,booleanConverter, mqttHandler) },
                 { StateEntities.Armed, new ArmedCommand(topics,booleanConverter, mqttHandler) },
                 { StateEntities.AudioEnabled, new AudioEnabledCommand(topics,booleanConverter, mqttHandler) },
                 { StateEntities.BatteryLevel, new BatteryLevelCommand(topics,booleanConverter, mqttHandler) },
@@ -58,10 +34,28 @@ namespace ezviz_mqtt.commands
                 { StateEntities.RtspEncrypted, new RtspEncryptedCommand(topics,booleanConverter, mqttHandler) },
                 { StateEntities.Sleeping, new SleepingCommand(topics,booleanConverter, mqttHandler) },
                 { StateEntities.StatusLedEnabled, new StatusLedEnabledCommand(topics,booleanConverter, mqttHandler) },
+                { StateEntities.TriggerAlarm, new TriggerAlarmStatusCommand(topics,booleanConverter, mqttHandler) },
                 { StateEntities.UpgradeAvailable, new UpgradeAvailableCommand(topics,booleanConverter, mqttHandler) },
                 { StateEntities.UpgradeInProgress, new UpgradeInProgressCommand(topics,booleanConverter, mqttHandler) },
                 { StateEntities.UpgradePercent, new UpgradePercentCommand(topics,booleanConverter, mqttHandler) },
             };
+
+            StateUpdateCommands = new Dictionary<string, IStateUpdateCommand>(StringComparer.OrdinalIgnoreCase)
+            {
+                { StateEntities.AlarmDetectionMethod, new AlarmDetectionMethodUpdateCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.AlarmDetectionMethod]) },
+                { StateEntities.AlarmSound, new AlarmSoundUpdateCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.AlarmSound]) },
+                { StateEntities.Armed, new ArmDisarmCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.Armed]) },
+                { StateEntities.AudioEnabled, new AudioEnabledUpdateCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.AudioEnabled]) },
+                { StateEntities.DetectionSensitivityLevel, new DetectionSensitivityUpdateCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.DetectionSensitivityLevel]) },
+                { StateEntities.InfraredEnabled, new InfraredEnabledUpdateCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.InfraredEnabled]) },
+                { StateEntities.MobileTrackingEnabled, new MobileTrackingEnabledUpdateCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.MobileTrackingEnabled]) },
+                { StateEntities.Sleeping, new SleepingUpdateCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.Sleeping]) },
+                { StateEntities.StatusLedEnabled, new StatusLedEnabledUpdateCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.StatusLedEnabled]) },
+                { StateEntities.TriggerAlarm, new TriggerAlarmCommand(client, jsonOptions.Value, StatePublishCommands[StateEntities.TriggerAlarm]) },
+                
+            };
+
+            
         }
 
         public IStateUpdateCommand GetStateUpdateCommand(string commandKey)

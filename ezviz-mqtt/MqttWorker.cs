@@ -133,23 +133,21 @@ internal class MqttWorker : IMqttWorker
         HandleNewAlarms(camera, alarm).Wait();
     }
 
-    private async Task SendMqttForCamera(Camera camera)
+    private void SendMqttForCamera(Camera camera)
     {
         var topic = mqttTopics.GetTopic(Topics.Stat, camera.SerialNumber);
         mqttHandler.SendMqtt(topic, camera);
 
-        /*************************************************************************/
-
         commandFactory.GetAllStatePublishCommands().ToList().ForEach(cmd => cmd.Publish(camera));
     }
 
-    private async Task SendMqttForAlarm(Camera camera, Alarm alarm)
+    private void SendMqttForAlarm(Camera camera, Alarm alarm)
     {
         var topic = mqttTopics.GetTopic(Topics.Alarm, camera.SerialNumber);
         mqttHandler.SendMqtt(topic, alarm);
     }
 
-    private async Task SendLwtForCamera(string? serial, string message)
+    private void SendLwtForCamera(string? serial, string message)
     {
         if (serial == null)
         {
@@ -159,7 +157,7 @@ internal class MqttWorker : IMqttWorker
         mqttHandler.SendMqtt(mqttTopics.GetLwtTopicForCamera(serial), message, true, false);
     }
 
-    public async Task PublishAsync(CancellationToken stoppingToken)
+    public async Task PublishAsync(CancellationToken stoppingToken, bool force = false)
     {
         serviceState.MqttConnected = mqttHandler.IsConnected;
         await mqttHandler.EnsureConnected();
@@ -168,13 +166,13 @@ internal class MqttWorker : IMqttWorker
         var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
         try
         {
-            if (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras)
+            if (force || (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras))
             {
                 await PollCameras(stoppingToken);
                 LastFullPoll = DateTime.Now;
                 serviceState.LastStatusCheck = LastFullPoll;
             }
-            if (timeSinceLastAlarmPoll.TotalMinutes >= pollingConfig.Alarms)
+            if (force || (timeSinceLastAlarmPoll.TotalMinutes >= pollingConfig.Alarms))
             {
                 await PollAlarms(stoppingToken);
                 LastAlarmPoll = DateTime.Now;
@@ -219,8 +217,8 @@ internal class MqttWorker : IMqttWorker
             {
                 return;
             }
-            await SendMqttForCamera(camera);
-            await SendLwtForCamera(camera.SerialNumber, (camera.Online ?? false) ? mqttConfig.ServiceLwtOnlineMessage : mqttConfig.ServiceLwtOfflineMessage);
+            SendMqttForCamera(camera);
+            SendLwtForCamera(camera.SerialNumber, (camera.Online ?? false) ? mqttConfig.ServiceLwtOnlineMessage : mqttConfig.ServiceLwtOfflineMessage);
         }
         logger.LogInformation("Polling done, published details of {0} cameras", cameras.Count());
     }
@@ -254,7 +252,7 @@ internal class MqttWorker : IMqttWorker
                     {
                         alarm.DownloadedPicture = await ezvizClient.GetAlarmImageBase64(alarm);
                     }
-                    await SendMqttForAlarm(camera, alarm);
+                    SendMqttForAlarm(camera, alarm);
                 }
             }
             else
@@ -312,23 +310,8 @@ internal class MqttWorker : IMqttWorker
         string topicWithoutCommand = topic.Replace($"/{command}", "");
         string serial = topicWithoutCommand.Substring(topicWithoutCommand.LastIndexOf("/") + 1);
 
-        //TODO: Clean this up
         switch (command)
         {
-            case MQTT_COMMAND_ARMED:
-                var camera = cameras.FirstOrDefault(c => c.SerialNumber == serial);
-                if (camera != null)
-                {
-                    if (message == "ON")
-                    {
-                        await camera.Arm();
-                    }
-                    else if (message == "OFF")
-                    {
-                        await camera.Disarm();
-                    }
-                }
-                break;
             case MQTT_COMMAND_SET_STATE:
                 string entity = serial;
                 topicWithoutCommand = topicWithoutCommand.Replace($"/{entity}", "");
@@ -342,7 +325,7 @@ internal class MqttWorker : IMqttWorker
     }
 
     private const string MQTT_COMMAND_DEFENCEMODE = "defenceMode";
-    private const string MQTT_COMMAND_ARMED = "armed";
+    private const string MQTT_COMMAND_POLL_NOW = "poll";
     private const string MQTT_COMMAND_SET_STATE = "set";
 
     private async Task HandleStateSet(string serial, string stateEntity, string newValue)
@@ -368,6 +351,9 @@ internal class MqttWorker : IMqttWorker
                 var defenceMode = EnumX.Parse<DefenceMode>(message);
                 await ezvizClient.SetDefenceMode(defenceMode);
                 mqttHandler.SendMqtt(_globalStateTopic.Replace("{command}", MQTT_COMMAND_DEFENCEMODE), defenceMode.ToString(), false, false);
+                break;
+            case MQTT_COMMAND_POLL_NOW:
+                await PublishAsync(default, true);
                 break;
             default:
                 logger.LogInformation($"Unknown MQTT command received {command}");

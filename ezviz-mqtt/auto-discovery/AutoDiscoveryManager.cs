@@ -61,8 +61,7 @@ internal class AutoDiscoveryManager
         SendDiscoveryMessage(MapToSensor(StateEntities.PirStatus, "PiR Status", camera, device));
         SendDiscoveryMessage(MapToNumberSensor(StateEntities.DiskCapacity, "Disk Capacity", "data_size", "GB", camera, device));
         SendDiscoveryMessage(MapToSensor(StateEntities.LastAlarm, "Last Alarm", camera, device));
-
-        SendDiscoveryMessage(MapToSwitch(StateEntities.AlarmScheduleEnabled, "Alarm Schedule Enabled", camera, device));
+        SendDiscoveryMessage(MapToSensor(StateEntities.AlarmScheduleEnabled, "Alarm Schedule Enabled", camera, device));
         SendDiscoveryMessage(MapToSwitch(StateEntities.Sleeping, "Sleeping", camera, device));
         SendDiscoveryMessage(MapToSwitch(StateEntities.AudioEnabled, "Audio", camera, device));
         SendDiscoveryMessage(MapToSwitch(StateEntities.InfraredEnabled, "Infrared", camera, device));

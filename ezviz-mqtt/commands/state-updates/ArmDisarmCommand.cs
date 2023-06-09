@@ -1,18 +1,19 @@
 ﻿using ezviz.net;
 using ezviz.net.domain;
-using ezviz_mqtt.util;
+using ezviz_mqtt.commands.publish_state;
+using ezviz_mqtt.config;
 
 namespace ezviz_mqtt.commands.state_updates
 {
     internal class ArmDisarmCommand : BaseStateUpdateCommand
     {
-        public ArmDisarmCommand(IEzvizClient client, TopicExtensions topics, IMqttHandler mqttHandler) : base(client, topics, mqttHandler)
+        public ArmDisarmCommand(IEzvizClient client, JsonOptions jsonOptions, IStatePublishCommand updateCommand) : base(client, jsonOptions, updateCommand)
         {
         }
 
-        public override async Task UpdateState(Camera camera, string newState)
+        protected override async Task UpdateStateCustom(Camera camera, string newState)
         {
-            if (newState == "ON")
+            if (newState == jsonOptions.SerializeTrueAs)
             {
                 await camera.Arm();
             }
@@ -20,7 +21,6 @@ namespace ezviz_mqtt.commands.state_updates
             {
                 await camera.Disarm();
             }
-            mqttHandler.SendRawMqtt(topics.GetStatusTopic(StateEntities.Armed, camera), newState);
         }
     }
 }

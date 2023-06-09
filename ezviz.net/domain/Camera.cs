@@ -171,7 +171,7 @@ namespace ezviz.net.domain
         /// <summary>
         /// SD Card space remaining in GB
         /// </summary>
-        public decimal DiskCapacityGB => Math.Round( DiskCapacityMB / 1024, 2);
+        public decimal DiskCapacityGB => Math.Round( DiskCapacityMB / 1024, 0);
 
         /// <summary>
         /// Motion detection method (human/vehicle/both/regular motion)
@@ -247,7 +247,7 @@ namespace ezviz.net.domain
         /// </summary>
         /// <param name="level"></param>
         /// <returns></returns>
-        public async Task SetDetectionSensibility(DetectionSensitivityLevel level)
+        public async Task SetDetectionSensitivity(DetectionSensitivityLevel level)
         {
             var type = (DeviceInfo?.DeviceCategory == DeviceCategories.BATTERY_CAMERA_DEVICE_CATEGORY)
                         ? 3
@@ -263,6 +263,7 @@ namespace ezviz.net.domain
         public async Task Arm()
         {
             await client.SetCameraArmed(SerialNumber, true);
+            Status.GlobalStatus = 1;
         }
 
         /// <summary>
@@ -272,6 +273,7 @@ namespace ezviz.net.domain
         public async Task Disarm()
         {
             await client.SetCameraArmed(SerialNumber, false);
+            Status.GlobalStatus = 0;
         }
 
         /// <summary>
@@ -299,6 +301,7 @@ namespace ezviz.net.domain
         internal async Task ToggleSwitch(SwitchType type, bool enabled)
         {
             await client.ChangeSwitch(SerialNumber, type, enabled);
+            Switches.First(s => s.Type == type).Enable = enabled;
         }
 
         /// <summary>
@@ -308,7 +311,7 @@ namespace ezviz.net.domain
         /// <returns></returns>
         public async Task ToggleAudio(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.Sound, enabled);
+            await ToggleSwitch(SwitchType.Sound, enabled);
         }
 
         /// <summary>
@@ -318,7 +321,7 @@ namespace ezviz.net.domain
         /// <returns></returns>
         public async Task ToggleLed(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.Light, enabled);
+            await ToggleSwitch(SwitchType.Light, enabled);
         }
 
         /// <summary>
@@ -328,7 +331,7 @@ namespace ezviz.net.domain
         /// <returns></returns>
         public async Task ToggleInfrared(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.InfraredLight, enabled);
+            await ToggleSwitch(SwitchType.InfraredLight, enabled);
         }
 
         /// <summary>
@@ -338,7 +341,7 @@ namespace ezviz.net.domain
         /// <returns></returns>
         public async Task TogglePrivacyMode(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.Privacy, enabled);
+            await ToggleSwitch(SwitchType.Privacy, enabled);
         }
 
         /// <summary>
@@ -348,7 +351,7 @@ namespace ezviz.net.domain
         /// <returns></returns>
         public async Task ToggleSleepMode(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.Sleep, enabled);
+            await ToggleSwitch(SwitchType.Sleep, enabled);
         }
 
         /// <summary>
@@ -358,7 +361,7 @@ namespace ezviz.net.domain
         /// <returns></returns>
         public async Task ToggleMobileTracking(bool enabled)
         {
-            await client.ChangeSwitch(SerialNumber, SwitchType.MobileTracking, enabled);
+            await ToggleSwitch(SwitchType.MobileTracking, enabled); 
         }
 
         internal async Task<AlarmDetectionMethod> GetAlarmDetectionMethod()
