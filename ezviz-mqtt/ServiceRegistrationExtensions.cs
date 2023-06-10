@@ -12,7 +12,7 @@ namespace ezviz_mqtt
 {
     public static class ServiceRegistrationExtensions
     {
-        public static IServiceCollection AddMqttPublisher<T>(this IServiceCollection services, IConfiguration configuration) where T: BackgroundService
+        public static IServiceCollection AddMqttWorker<T>(this IServiceCollection services, IConfiguration configuration) where T: BackgroundService
         {
             services.AddHostedService<T>();
             services.AddOptions();

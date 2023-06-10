@@ -19,7 +19,7 @@ public class EzvizClient : IEzvizClient
     private string? region;
 
     private LoginArea? apiDetails;
-    private LoginSession? session;
+    private LoginSession? session = null!;
     private EzvizUser? user;
     private SystemConfigInfo systemConfig = null!;
 
@@ -460,7 +460,7 @@ public class EzvizClient : IEzvizClient
 
     public async Task EnablePushNotifications(IPushNotificationLogger logger, Action<Alarm> messageHandler)
     {
-        if (user == null)
+        if (user == null || session == null)
         {
             throw new EzvizNetException("Cannot register for push notifications before logging in");
         }

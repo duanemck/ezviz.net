@@ -1,4 +1,5 @@
 using ezviz_mqtt;
+using ezviz_mqtt.util;
 using ezviz_systemd.net;
 
 await Host.CreateDefaultBuilder(args)
@@ -10,13 +11,25 @@ await Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((hostContext, services) =>
     {
+        var loggingConfig = hostContext.Configuration.GetSection("log");
+        LogLevel logLevel = EnumX.Parse<LogLevel>(loggingConfig["LogLevel"] ?? "Information");
         services
-            .AddSystemdLogging()
-            .AddLogging(c=>
+            .AddLogging(config =>
             {
-                c.AddFile(hostContext.Configuration.GetSection("Logging"));
+                config
+                    .ClearProviders()
+                    .AddProvider(new CustomLoggerProvider())
+                    .AddFilter("Microsoft", LogLevel.None)
+                    .AddFilter("System", LogLevel.None);
+
+                if (loggingConfig != null)
+                {
+                    config.AddFile(loggingConfig);
+                }
             })
-            .AddMqttPublisher<Worker>(hostContext.Configuration);
+            .Configure<LoggerFilterOptions>(options => options.MinLevel = logLevel)
+            .AddSystemdLogging()
+            .AddMqttWorker<Worker>(hostContext.Configuration);
     })
     .UseSystemd()
     .Build()

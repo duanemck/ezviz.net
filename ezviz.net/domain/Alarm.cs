@@ -1,4 +1,5 @@
 ﻿using ezviz.net.cloud_mqtt;
+using ezviz.net.exceptions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -17,10 +18,14 @@ public class Alarm
 
     internal Alarm(PushMessage pushMessage)
     {
+        if (pushMessage.Ext == null)
+        {
+            throw new EzvizNetException("Alarm details missing from push message");
+        }
         string[] alarmDetails = pushMessage.Ext.Split(",");
 
         AlarmId = alarmDetails[15];
-        AlarmMessage = pushMessage.Alert;
+        AlarmMessage = pushMessage.Alert ?? "Alarm";
         AlarmName = alarmDetails[17];
 
         AlarmStartTimeStr = alarmDetails[1];

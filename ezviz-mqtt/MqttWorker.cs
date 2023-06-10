@@ -93,7 +93,7 @@ internal class MqttWorker : IMqttWorker
         {
             ezvizClient.LogAllResponses = pollingConfig.LogAllResponses;
 
-            await mqttHandler.ConnectToMqtt(_deviceCommandTopic, _globalCommandTopic, _deviceStatusTopic);
+            mqttHandler.ConnectToMqtt(_deviceCommandTopic, _globalCommandTopic, _deviceStatusTopic);
             if (string.IsNullOrEmpty(ezvizConfig?.Username) || string.IsNullOrEmpty(ezvizConfig?.Password))
             {
                 throw new EzvizNetException("Please provide an ezviz username and password");

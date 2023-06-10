@@ -2,7 +2,7 @@
 {
     internal interface IMqttHandler
     {
-        Task ConnectToMqtt(params string[] topicsToSubscribe);
+        void ConnectToMqtt(params string[] topicsToSubscribe);
 
         void SendRawMqtt(string topic, object? data);
 

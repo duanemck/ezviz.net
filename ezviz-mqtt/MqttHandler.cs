@@ -57,7 +57,7 @@ namespace ezviz_mqtt
             }
         }
 
-        public async Task ConnectToMqtt(params string[] topicsToSubscribe) 
+        public void ConnectToMqtt(params string[] topicsToSubscribe) 
         {
             logger.LogInformation("Connecting to MQTT {0}", mqttConfig.Host);
             mqttClient.MqttMsgPublishReceived += MessageReceived;
@@ -81,7 +81,7 @@ namespace ezviz_mqtt
                 try
                 {
                     logger.LogWarning("MQTT connection seems to be down, reconnecting");
-                    await ConnectToMqtt();
+                    ConnectToMqtt();
                 }
                 catch (Exception e)
                 {

@@ -37,7 +37,7 @@ namespace ezviz_mqtt.util
                 _categoryName = categoryName;
             }
 
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
             {
                 if (!IsEnabled(logLevel))
                 {
@@ -67,9 +67,11 @@ namespace ezviz_mqtt.util
                 return true;
             }
 
-            public IDisposable? BeginScope<TState>(TState state)
+            public IDisposable BeginScope<TState>(TState state)
             {
+#pragma warning disable CS8603
                 return null;
+#pragma warning restore CS8603
             }
         }
     }
