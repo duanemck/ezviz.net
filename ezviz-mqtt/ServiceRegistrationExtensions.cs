@@ -1,5 +1,6 @@
 ﻿using ezviz.net.util;
 using ezviz.netmqtt;
+using ezviz_mqtt.auto_discovery;
 using ezviz_mqtt.commands;
 using ezviz_mqtt.config;
 using ezviz_mqtt.health;
@@ -38,6 +39,7 @@ namespace ezviz_mqtt
 
             services.AddSingleton<IMqttHandler, MqttHandler>();
             services.AddSingleton<IStateCommandFactory, StateCommandFactory>();
+            services.AddSingleton<IAutoDiscoveryManager, AutoDiscoveryManager>();
             return services;
         }
     }

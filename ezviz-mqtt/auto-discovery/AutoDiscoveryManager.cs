@@ -1,46 +1,32 @@
 ﻿using ezviz.net.domain.deviceInfo;
 using ezviz_mqtt.util;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System.Text;
-using uPLibrary.Networking.M2Mqtt;
 
 using EzvizCamera = ezviz.net.domain.Camera;
 using ezviz_mqtt.auto_discovery.domain;
-using uPLibrary.Networking.M2Mqtt.Messages;
 using ezviz_mqtt.config;
 using Device = ezviz_mqtt.auto_discovery.domain.Device;
 using ezviz.net.domain;
 using Camera = ezviz_mqtt.auto_discovery.domain.Camera;
 using Sensor = ezviz_mqtt.auto_discovery.domain.Sensor;
 using Switch = ezviz_mqtt.auto_discovery.domain.Switch;
-using System.Xml.Linq;
 using ezviz_mqtt.commands;
+using Microsoft.Extensions.Options;
 
 namespace ezviz_mqtt.auto_discovery;
 
-internal class AutoDiscoveryManager
+internal class AutoDiscoveryManager : IAutoDiscoveryManager
 {
     private const string homeAssistantDiscoveryTopic = "homeassistant/{device_class}/{node_id}/{unique_id}/config";
-
-    private readonly ILogger logger;
     private readonly IMqttHandler mqttHandler;
     private readonly TopicExtensions topics;
     private readonly MqttOptions mqttConfig;
 
-    JsonSerializerOptions jsonSerializationOptions = new JsonSerializerOptions()
+    public AutoDiscoveryManager(IMqttHandler mqttHandler, TopicExtensions topics, IOptions<MqttOptions> mqttConfig)
     {
-        WriteIndented = false,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-    };
-
-    public AutoDiscoveryManager(ILogger logger, IMqttHandler mqttHandler, TopicExtensions topics, MqttOptions mqttConfig)
-    {
-        this.logger = logger;
         this.mqttHandler = mqttHandler;
         this.topics = topics;
-        this.mqttConfig = mqttConfig;
+        this.mqttConfig = mqttConfig.Value;
     }
 
     public void AutoDiscoverCamera(EzvizCamera camera)

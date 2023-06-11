@@ -12,6 +12,18 @@ using Microsoft.Extensions.Options;
 
 namespace ezviz_mqtt;
 
+/*
+ * 
+ * TODO:
+ * - Figure out how to expose RTSP stream in Auto Discover
+ * - Publish extra attributes
+ *      - IP addresses
+ *      - Last Alarm
+ *  - Send LastAlarmImage as Base64
+ *  Open RTSP Stream to send static image when polling
+ */
+
+
 internal class MqttWorker : IMqttWorker
 {
     private readonly ILogger<MqttWorker> logger;
@@ -24,9 +36,10 @@ internal class MqttWorker : IMqttWorker
     private readonly IPushNotificationLogger pushLogger;
     private readonly IStateCommandFactory commandFactory;
     private readonly IMqttHandler mqttHandler;
-
+    private readonly IAutoDiscoveryManager autoDiscoverManager;
     private DateTime LastFullPoll = default;
     private DateTime LastAlarmPoll = default;
+    private DateTime LastAutoDiscoverMessage = default;
 
     private IEnumerable<Camera> cameras = new List<Camera>();
 
@@ -37,8 +50,6 @@ internal class MqttWorker : IMqttWorker
     private readonly string _deviceCommandTopic;
     private readonly string _deviceStatusTopic;
 
-
-    private bool discoveryMessagesSent = false;
 
     private readonly TopicExtensions mqttTopics;
 
@@ -51,7 +62,8 @@ internal class MqttWorker : IMqttWorker
         IEzvizClient ezvizClient,
         IPushNotificationLogger pushLogger,
         IStateCommandFactory commandFactory,
-        IMqttHandler mqttHandler)
+        IMqttHandler mqttHandler,
+        IAutoDiscoveryManager autoDiscoverManager)
     {
         this.logger = logger;
         this.serviceState = serviceState;
@@ -61,6 +73,7 @@ internal class MqttWorker : IMqttWorker
         this.pushLogger = pushLogger;
         this.commandFactory = commandFactory;
         this.mqttHandler = mqttHandler;
+        this.autoDiscoverManager = autoDiscoverManager;
         pollingConfig = pollingOptions.Value;
 
         mqttHandler.MessageReceived += MqttHandler_MessageReceived;
@@ -163,13 +176,15 @@ internal class MqttWorker : IMqttWorker
         await mqttHandler.EnsureConnected();
 
         var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
+        var timeSinceLastAutoDiscover = DateTime.Now - LastAutoDiscoverMessage;
         var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
         try
         {
             if (force || (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras))
             {
-                await PollCameras(stoppingToken);
+                await PollCameras(stoppingToken, timeSinceLastAutoDiscover.TotalHours >= 1);
                 LastFullPoll = DateTime.Now;
+                LastAutoDiscoverMessage = DateTime.Now;
                 serviceState.LastStatusCheck = LastFullPoll;
             }
             if (force || (timeSinceLastAlarmPoll.TotalMinutes >= pollingConfig.Alarms))
@@ -182,13 +197,14 @@ internal class MqttWorker : IMqttWorker
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to poll ezviz API");
+            LastAutoDiscoverMessage = DateTime.Now;
             LastFullPoll = LastAlarmPoll = DateTime.Now;
             serviceState.MostRecentError = ex.Message;
             serviceState.MostRecentErrorTime = DateTime.Now;
         }
     }
 
-    private async Task PollCameras(CancellationToken stoppingToken)
+    private async Task PollCameras(CancellationToken stoppingToken, bool sendAutoDisover)
     {
         if (ezvizConfig.EnablePushNotifications)
         {
@@ -201,22 +217,19 @@ internal class MqttWorker : IMqttWorker
         logger.LogInformation("Polling ezviz API for full camera details");
         cameras = await ezvizClient.GetCameras(stoppingToken);
 
-        if (!discoveryMessagesSent)
-        {
-            var manager = new AutoDiscoveryManager(logger, mqttHandler, mqttTopics, mqttConfig);
-            foreach (var camera in cameras)
-            {
-                manager.AutoDiscoverCamera(camera);
-            }
-            discoveryMessagesSent = true;
-        }
-
         foreach (var camera in cameras)
         {
             if (stoppingToken.IsCancellationRequested)
             {
                 return;
             }
+            if (sendAutoDisover)
+            {
+                autoDiscoverManager.AutoDiscoverCamera(camera);
+                //Let HA process the messages before sendinf the actual values
+                await Task.Delay(10 * 10000);
+            }
+
             SendMqttForCamera(camera);
             SendLwtForCamera(camera.SerialNumber, (camera.Online ?? false) ? mqttConfig.ServiceLwtOnlineMessage : mqttConfig.ServiceLwtOfflineMessage);
         }

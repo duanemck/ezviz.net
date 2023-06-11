@@ -11,24 +11,19 @@ await Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((hostContext, services) =>
     {
-        var loggingConfig = hostContext.Configuration.GetSection("log");
-        LogLevel logLevel = EnumX.Parse<LogLevel>(loggingConfig["LogLevel"] ?? "Information");
+        LogLevel logLevel = EnumX.Parse<LogLevel>(hostContext.Configuration.GetSection("log")["LogLevel"] ?? "Information");
         services
             .AddLogging(config =>
             {
                 config
                     .ClearProviders()
                     .AddProvider(new CustomLoggerProvider())
+                    .AddFile(hostContext.Configuration.GetSection("log"))
                     .AddFilter("Microsoft", LogLevel.None)
                     .AddFilter("System", LogLevel.None);
-
-                if (loggingConfig != null)
-                {
-                    config.AddFile(loggingConfig);
-                }
             })
             .Configure<LoggerFilterOptions>(options => options.MinLevel = logLevel)
-            .AddSystemdLogging()
+            //.AddSystemdLogging()
             .AddMqttWorker<Worker>(hostContext.Configuration);
     })
     .UseSystemd()
