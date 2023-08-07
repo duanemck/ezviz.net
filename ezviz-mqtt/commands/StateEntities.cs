@@ -1,12 +1,4 @@
-﻿using ezviz.net.domain.deviceInfo;
-using ezviz.net.domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ezviz_mqtt.commands
+﻿namespace ezviz_mqtt.commands
 {
     internal class StateEntities
     {
@@ -30,6 +22,7 @@ namespace ezviz_mqtt.commands
         public const string NotifyWhenOffline = "notify_when_offline";
         public const string Armed = "armed";
         public const string TriggerAlarm = "trigger_alarm";
+        public const string DefenceMode = "defenceMode";
 
     }
 }

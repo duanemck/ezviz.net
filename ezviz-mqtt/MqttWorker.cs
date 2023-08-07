@@ -21,6 +21,10 @@ namespace ezviz_mqtt;
  *      - Last Alarm
  *  - Send LastAlarmImage as Base64
  *  Open RTSP Stream to send static image when polling
+ *  
+ *  
+ *  - Auto discover service level (Away mode, etc)
+ *  - MQTT command to fetch static image
  */
 
 
@@ -80,8 +84,9 @@ internal class MqttWorker : IMqttWorker
 
         mqttTopics = new TopicExtensions(mqttConfig.Topics, StringComparer.OrdinalIgnoreCase);
         _globalCommandTopic = mqttTopics.GetTopic(Topics.GlobalCommand);
-        _deviceCommandTopic = mqttTopics.GetTopic(Topics.Command, "+");
         _globalStateTopic = mqttTopics.GetTopic(Topics.GlobalStatus);
+
+        _deviceCommandTopic = mqttTopics.GetTopic(Topics.Command, "+");
         _deviceStatusTopic = $"{mqttTopics.GetTopic(Topics.Status, "+").Replace("{entity}", "+")}/set";
     }
 
@@ -118,6 +123,7 @@ internal class MqttWorker : IMqttWorker
             {
                 await ezvizClient.EnablePushNotifications(pushLogger, HandlePushedAlarmMessage);
             }
+            autoDiscoverManager.AutoDiscoverServiceEntities(user);
 
         }
         catch (Exception ex)

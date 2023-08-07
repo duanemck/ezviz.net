@@ -12,6 +12,8 @@ using Sensor = ezviz_mqtt.auto_discovery.domain.Sensor;
 using Switch = ezviz_mqtt.auto_discovery.domain.Switch;
 using ezviz_mqtt.commands;
 using Microsoft.Extensions.Options;
+using System.Xml.Linq;
+using System.Xml;
 
 namespace ezviz_mqtt.auto_discovery;
 
@@ -149,5 +151,20 @@ internal class AutoDiscoveryManager : IAutoDiscoveryManager
             .Replace("{unique_id}", entity.UniqueId);
     }
 
+    public void AutoDiscoverServiceEntities(EzvizUser user)
+    {
+        var device = new Device($"ezvizmqttnet_{user.UserId}", "EzvizMQTT.NET", "duanemck", "");
 
+        var stateTopic = topics.GetTopic(Topics.GlobalStatus).Replace("{command}", "defenceMode"); 
+        var commandTopic = topics.GetTopic(Topics.GlobalCommand).Replace("#", "defenceMode");
+        var availability = new List<Availability>()
+        {
+            new Availability(mqttConfig.ServiceLwtTopic, mqttConfig.ServiceLwtOnlineMessage, mqttConfig.ServiceLwtOfflineMessage)
+        };
+        var switchEntity = new Select($"ezviz_{user.UserId}_defencemode", $"Ezviz Defence Mode", device, commandTopic, stateTopic, new[] { "Home", "Away" })
+        {
+            Availability = availability
+        };
+        SendDiscoveryMessage(switchEntity);
+    }
 }
