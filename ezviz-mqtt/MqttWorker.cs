@@ -20,10 +20,11 @@ namespace ezviz_mqtt;
  *      - IP addresses
  *      - Last Alarm
  *  - Send LastAlarmImage as Base64
- *  Open RTSP Stream to send static image when polling
+ *  - Open RTSP Stream to send static image when polling
+ *  - Use native HA update sensor for updates
  *  
  *  
- *  - Auto discover service level (Away mode, etc)
+ *  - Auto discover service level sensors (Away mode, etc)
  *  - MQTT command to fetch static image
  */
 
@@ -214,6 +215,7 @@ internal class MqttWorker : IMqttWorker
     {
         if (ezvizConfig.EnablePushNotifications)
         {
+            logger.LogInformation($"Ensuring that push notification channel is still open");
             await ezvizClient.CheckPushConnection();
         }
         logger.LogInformation("Checking Defence Mode");
@@ -231,9 +233,11 @@ internal class MqttWorker : IMqttWorker
             }
             if (sendAutoDisover)
             {
+                logger.LogInformation($"Sending auto-discover messages for {camera.SerialNumber}");
                 autoDiscoverManager.AutoDiscoverCamera(camera);
                 //Let HA process the messages before sending the actual values
-                await Task.Delay(10 * 1000);
+                logger.LogInformation($"Waiting 10s before sending actual values");
+                await Task.Delay(10 * 1000, stoppingToken);
             }
 
             SendMqttForCamera(camera);

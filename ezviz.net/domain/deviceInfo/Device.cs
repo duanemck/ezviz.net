@@ -29,7 +29,10 @@ public class Device
             P2P = Deserialize<P2PEndpoint[]>(response.P2P[serial]);
             Connection = Deserialize<Connection>(response.Connection[serial]);
             KMS = Deserialize<KMS>(response.KMS[serial]);
-            Status = Deserialize<Status>(response.Status[serial]);
+            if (response.Status != null)
+            {
+                Status = Deserialize<Status>(response.Status[serial]);
+            }
             TimePlans = Deserialize<TimePlan[]>(response.Time_Plan[serial]);
             if (response.QOS != null)
             {
