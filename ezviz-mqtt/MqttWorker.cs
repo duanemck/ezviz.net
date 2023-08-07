@@ -232,8 +232,8 @@ internal class MqttWorker : IMqttWorker
             if (sendAutoDisover)
             {
                 autoDiscoverManager.AutoDiscoverCamera(camera);
-                //Let HA process the messages before sendinf the actual values
-                await Task.Delay(10 * 10000);
+                //Let HA process the messages before sending the actual values
+                await Task.Delay(10 * 1000);
             }
 
             SendMqttForCamera(camera);
