@@ -13,7 +13,8 @@ internal class MqttOptions
     public string ServiceLwtTopic { get; set; } = null!;
     public string ServiceLwtOfflineMessage { get; set; } = null!;
     public string ServiceLwtOnlineMessage { get; set; } = null!;
-
+    public string AutodiscoverPrefix { get; set; } = null!;
+    
     public IDictionary<string, string> Topics { get; set; } = null!;
 }
 

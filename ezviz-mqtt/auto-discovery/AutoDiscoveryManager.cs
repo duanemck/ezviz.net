@@ -1,6 +1,5 @@
 ﻿using ezviz.net.domain.deviceInfo;
 using ezviz_mqtt.util;
-using Microsoft.Extensions.Logging;
 
 using EzvizCamera = ezviz.net.domain.Camera;
 using ezviz_mqtt.auto_discovery.domain;
@@ -12,14 +11,14 @@ using Sensor = ezviz_mqtt.auto_discovery.domain.Sensor;
 using Switch = ezviz_mqtt.auto_discovery.domain.Switch;
 using ezviz_mqtt.commands;
 using Microsoft.Extensions.Options;
-using System.Xml.Linq;
-using System.Xml;
 
 namespace ezviz_mqtt.auto_discovery;
 
 internal class AutoDiscoveryManager : IAutoDiscoveryManager
 {
-    private const string homeAssistantDiscoveryTopic = "homeassistant/{device_class}/{node_id}/{unique_id}/config";
+    private const string homeAssistantDiscoveryTopicTemplate = "{prefix}/{device_class}/{node_id}/{unique_id}/config";
+    private const string defaultAutodiscoveryTemplate = "homeassistant";
+    private readonly string homeAssistantDiscoveryTopic;
     private readonly IMqttHandler mqttHandler;
     private readonly TopicExtensions topics;
     private readonly MqttOptions mqttConfig;
@@ -29,6 +28,7 @@ internal class AutoDiscoveryManager : IAutoDiscoveryManager
         this.mqttHandler = mqttHandler;
         this.topics = topics;
         this.mqttConfig = mqttConfig.Value;
+        homeAssistantDiscoveryTopic = homeAssistantDiscoveryTopicTemplate.Replace("{prefix}", this.mqttConfig.AutodiscoverPrefix ?? defaultAutodiscoveryTemplate);
     }
 
     public void AutoDiscoverCamera(EzvizCamera camera)
