@@ -11,12 +11,14 @@ namespace ezviz_mqtt.commands.publish_state
         protected readonly TopicExtensions topics;
         protected readonly BooleanConvertor booleanConverter;
         protected readonly IMqttHandler mqttHandler;
+        protected readonly IEzvizClient ezvizClient;
 
-        public BasePublishStateCommand(TopicExtensions topics, BooleanConvertor booleanConvertor, IMqttHandler mqttHandler)
+        public BasePublishStateCommand(TopicExtensions topics, BooleanConvertor booleanConvertor, IMqttHandler mqttHandler, IEzvizClient client)
         {
             this.topics = topics;
             this.booleanConverter = booleanConvertor;
             this.mqttHandler = mqttHandler;
+            this.ezvizClient = client;
         }
 
         public abstract void Publish(Camera camera);

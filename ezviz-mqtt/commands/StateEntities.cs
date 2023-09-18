@@ -13,6 +13,8 @@
         public const string PirStatus = "pir_status";
         public const string DiskCapacity = "disk_capacity";
         public const string LastAlarm = "last_alarm";
+        public const string LastAlarmImageUrl = "last_alarm_image_url";
+        public const string LastAlarmImage = "last_alarm_image";
         public const string AlarmScheduleEnabled = "alarm_schedule_enabled";
         public const string Sleeping = "sleeping";
         public const string AudioEnabled = "audio_enabled";
@@ -23,6 +25,7 @@
         public const string Armed = "armed";
         public const string TriggerAlarm = "trigger_alarm";
         public const string DefenceMode = "defenceMode";
+        public const string Image = "image";
 
     }
 }

@@ -8,6 +8,7 @@ using Device = ezviz_mqtt.auto_discovery.domain.Device;
 using ezviz.net.domain;
 using Camera = ezviz_mqtt.auto_discovery.domain.Camera;
 using Sensor = ezviz_mqtt.auto_discovery.domain.Sensor;
+using ImageSensor = ezviz_mqtt.auto_discovery.domain.Image;
 using Switch = ezviz_mqtt.auto_discovery.domain.Switch;
 using ezviz_mqtt.commands;
 using Microsoft.Extensions.Options;
@@ -51,7 +52,9 @@ internal class AutoDiscoveryManager : IAutoDiscoveryManager
         }
         SendDiscoveryMessage(MapToSensor(StateEntities.PirStatus, "PiR Status", camera, device));
         SendDiscoveryMessage(MapToNumberSensor(StateEntities.DiskCapacity, "Disk Capacity", "data_size", "GB", camera, device));
-        SendDiscoveryMessage(MapToSensor(StateEntities.LastAlarm, "Last Alarm", camera, device));
+        SendDiscoveryMessage(MapToSensor(StateEntities.LastAlarm, "Last Alarm Time", camera, device));
+        SendDiscoveryMessage(MapToSensor(StateEntities.LastAlarmImageUrl, "Last Alarm Image Url", camera, device));
+        SendDiscoveryMessage(MapToBase64ImageSensor(StateEntities.LastAlarmImage, "Last Alarm", camera, device, "image/png"));
         SendDiscoveryMessage(MapToSensor(StateEntities.AlarmScheduleEnabled, "Alarm Schedule Enabled", camera, device));
         SendDiscoveryMessage(MapToSwitch(StateEntities.Sleeping, "Sleeping", camera, device));
         SendDiscoveryMessage(MapToSwitch(StateEntities.AudioEnabled, "Audio", camera, device));
@@ -87,7 +90,7 @@ internal class AutoDiscoveryManager : IAutoDiscoveryManager
 
     private Camera MapCameraToHA(EzvizCamera camera, Device device)
     {
-        var Camera = new Camera($"ezviz_{camera.SerialNumber}_camera", $"{camera.DeviceInfo.Name} Camera", device, topics.GetTopic(Topics.Image, camera))
+        var Camera = new Camera($"ezviz_{camera.SerialNumber}_camera", $"{camera.DeviceInfo.Name} Camera", device, topics.GetStatusSetTopic(StateEntities.Image, camera))
         {
             Availability = GetAvailability(camera.SerialNumber),
             Icon = "mdi:cctv",
@@ -95,6 +98,8 @@ internal class AutoDiscoveryManager : IAutoDiscoveryManager
         };
         return Camera;
     }
+
+
 
     private Select MapToSelect<T>(EzvizCamera camera, Device device) where T : struct
     {
@@ -133,7 +138,15 @@ internal class AutoDiscoveryManager : IAutoDiscoveryManager
         sensor.DeviceClass = deviceClass;
         sensor.UnitOfMeasurement = unitOfMeasure;
         return sensor;
+    }
 
+    private Image MapToBase64ImageSensor(string name, string friendlyName, EzvizCamera camera, Device device, string imageType)
+    {
+        var topic = topics.GetStatusTopic(name, camera);
+        return new ImageSensor($"ezviz_{camera.SerialNumber}_{name}", $"{camera.DeviceInfo.Name} {friendlyName}", device, topic, "b64", imageType)
+        {
+            Availability = GetAvailability(camera.SerialNumber),
+        };
     }
 
     private Binary_Sensor MapToBinarySensor(string name, string friendlyName, EzvizCamera camera, Device device)

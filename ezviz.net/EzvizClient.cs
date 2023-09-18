@@ -4,6 +4,7 @@ using ezviz.net.exceptions;
 using ezviz.net.util;
 using ezviz_mqtt.cloud_mqtt;
 using Refit;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -108,12 +109,17 @@ public class EzvizClient : IEzvizClient
     {
         if (!string.IsNullOrEmpty(alarm.PicUrl))
         {
-            var stream = await DownloadAuthenticatedFile(alarm.PicUrl);
-            var memoryStream = new MemoryStream();
-            stream.CopyTo(memoryStream);
-            return Convert.ToBase64String(memoryStream.ToArray());
+            return await GetAlarmImageBase64(alarm.PicUrl);
         }
         return null;
+    }
+
+    public async Task<string?> GetAlarmImageBase64(string url)
+    {
+        var stream = await DownloadAuthenticatedFile(url);
+        var memoryStream = new MemoryStream();
+        stream.CopyTo(memoryStream);
+        return Convert.ToBase64String(memoryStream.ToArray());
     }
 
     public async Task<IEnumerable<Camera>> GetCameras(CancellationToken stoppingToken = default)
@@ -480,6 +486,8 @@ public class EzvizClient : IEzvizClient
     {
         return pushManager.OpenPushNotificationStream();
     }
+
+
 }
 
 internal class Token

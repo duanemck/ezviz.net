@@ -57,7 +57,7 @@ namespace ezviz_mqtt
             }
         }
 
-        public void ConnectToMqtt(params string[] topicsToSubscribe) 
+        public void ConnectToMqtt(Action<bool>? callbackOnConnection = null, params string[] topicsToSubscribe) 
         {
             logger.LogInformation("Connecting to MQTT {0}", mqttConfig.Host);
             mqttClient.MqttMsgPublishReceived += MessageReceived;
@@ -71,9 +71,14 @@ namespace ezviz_mqtt
             {
                 Subscribe(topic);
             }
+
+            if (callbackOnConnection is not null)
+            {
+                callbackOnConnection(true);
+            }
         }
 
-        public async Task EnsureConnected()
+        public async Task EnsureConnected(Action<bool>? callbackOnConnection = null)
         {
             int counter = 0;
             while (!mqttClient.IsConnected && counter < mqttConfig.ConnectRetries)
@@ -81,7 +86,7 @@ namespace ezviz_mqtt
                 try
                 {
                     logger.LogWarning("MQTT connection seems to be down, reconnecting");
-                    ConnectToMqtt();
+                    ConnectToMqtt(callbackOnConnection);
                 }
                 catch (Exception e)
                 {

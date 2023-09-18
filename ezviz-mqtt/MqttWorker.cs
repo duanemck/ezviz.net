@@ -112,7 +112,7 @@ internal class MqttWorker : IMqttWorker
         {
             ezvizClient.LogAllResponses = pollingConfig.LogAllResponses;
 
-            mqttHandler.ConnectToMqtt(_deviceCommandTopic, _globalCommandTopic, _deviceStatusTopic);
+            mqttHandler.ConnectToMqtt(null, _deviceCommandTopic, _globalCommandTopic, _deviceStatusTopic);
             if (string.IsNullOrEmpty(ezvizConfig?.Username) || string.IsNullOrEmpty(ezvizConfig?.Password))
             {
                 throw new EzvizNetException("Please provide an ezviz username and password");
@@ -180,19 +180,32 @@ internal class MqttWorker : IMqttWorker
     public async Task PublishAsync(CancellationToken stoppingToken, bool force = false)
     {
         serviceState.MqttConnected = mqttHandler.IsConnected;
-        await mqttHandler.EnsureConnected();
+        await mqttHandler.EnsureConnected((reconnected)=>
+        {
+            if (reconnected)
+            {
+                LastAutoDiscoverMessage = default;
+            }
+        });
 
         var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
         var timeSinceLastAutoDiscover = DateTime.Now - LastAutoDiscoverMessage;
         var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
         try
         {
-            if (force || (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras))
+            if (timeSinceLastAutoDiscover.TotalHours >= 1)
             {
-                await PollCameras(stoppingToken, timeSinceLastAutoDiscover.TotalHours >= 1);
-                LastFullPoll = DateTime.Now;
-                LastAutoDiscoverMessage = DateTime.Now;
-                serviceState.LastStatusCheck = LastFullPoll;
+                await PollCameras(stoppingToken, true);
+            }
+            else
+            {
+                if (force || (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras))
+                {
+                    await PollCameras(stoppingToken, timeSinceLastAutoDiscover.TotalHours >= 1);
+                    LastFullPoll = DateTime.Now;
+                    LastAutoDiscoverMessage = DateTime.Now;
+                    serviceState.LastStatusCheck = LastFullPoll;
+                }
             }
             if (force || (timeSinceLastAlarmPoll.TotalMinutes >= pollingConfig.Alarms))
             {
