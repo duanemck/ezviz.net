@@ -8,5 +8,7 @@ internal class PollingOptions
     public string? RequestLogLocation { get; set; }
 
     public bool LogAllResponses { get; set; }
+
+    public string? LogResponsesForDevice { get; set; } = "";
 }
 

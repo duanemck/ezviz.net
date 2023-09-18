@@ -155,10 +155,10 @@ public class EzvizClient : IEzvizClient
             var device = new Camera(deviceInfo, response, this);
             if (SUPPORTED_DEVICE_CATEGORIES.Contains(device.DeviceInfo.DeviceCategory))
             {
-                //if (LogAllResponses)
-                //{
-                //    await Log(Guid.NewGuid(), deviceInfo, response);
-                //}
+                if (LogAllResponses)
+                {
+                    await Log(Guid.NewGuid(), deviceInfo, response);
+                }
                 return device;
             }            
         }
@@ -180,7 +180,7 @@ public class EzvizClient : IEzvizClient
 #pragma warning disable IL2026
         var log = $"[[DeviceInfo=>\n\n{ JsonSerializer.Serialize(deviceInfo, options)}\n\n]] [[PagedResponse=>\n\n{ JsonSerializer.Serialize(response, options)}\n\n]]";
 #pragma warning restore IL2026
-        await requestLogger.Log(id, log);
+        await requestLogger.Log(id, deviceInfo?.DeviceSerial, log);
 
     }
 

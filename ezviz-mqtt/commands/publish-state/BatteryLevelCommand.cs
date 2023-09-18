@@ -11,7 +11,10 @@ namespace ezviz_mqtt.commands.publish_state
 
         public override void Publish(Camera camera)
         {
-             mqttHandler.SendRawMqtt(topics.GetStatusTopic(StateEntities.BatteryLevel, camera), camera?.BatteryLevel);
+            if (camera.BatteryLevel is not null)
+            {
+                mqttHandler.SendRawMqtt(topics.GetStatusTopic(StateEntities.BatteryLevel, camera), camera?.BatteryLevel);
+            }
         }
     }
 }

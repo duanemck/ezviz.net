@@ -45,7 +45,10 @@ internal class AutoDiscoveryManager : IAutoDiscoveryManager
         SendDiscoveryMessage(MapToBinarySensor(StateEntities.UpgradeInProgress, "Upgrade In Progress", camera, device));
         SendDiscoveryMessage(MapToNumberSensor(StateEntities.UpgradePercent, "Upgrade Percent",null,"%", camera, device));
         SendDiscoveryMessage(MapToBinarySensor(StateEntities.RtspEncrypted, "RTSP Encrypted", camera, device));
-        SendDiscoveryMessage(MapToNumberSensor(StateEntities.BatteryLevel, "Battery Level", "battery", "%", camera, device));
+        if (camera.BatteryLevel is not null)
+        {
+            SendDiscoveryMessage(MapToNumberSensor(StateEntities.BatteryLevel, "Battery Level", "battery", "%", camera, device));
+        }
         SendDiscoveryMessage(MapToSensor(StateEntities.PirStatus, "PiR Status", camera, device));
         SendDiscoveryMessage(MapToNumberSensor(StateEntities.DiskCapacity, "Disk Capacity", "data_size", "GB", camera, device));
         SendDiscoveryMessage(MapToSensor(StateEntities.LastAlarm, "Last Alarm", camera, device));

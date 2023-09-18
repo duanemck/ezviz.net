@@ -8,9 +8,9 @@ namespace ezviz.net.util
 {
     internal class DefaultRequestResponseLogger : IRequestResponseLogger
     {
-        public Task Log(Guid? id, string message)
+        public Task Log(Guid? id, string? serialNumber, string message)
         {
-            Console.WriteLine($"[{id}] {message}");
+            Console.WriteLine($"[{serialNumber ?? id.ToString()}] {message}");
             return Task.CompletedTask; 
         }
     }

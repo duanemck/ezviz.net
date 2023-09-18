@@ -142,7 +142,7 @@ namespace ezviz.net.domain
         /// <summary>
         /// For battery operated cameras, the battery level
         /// </summary>
-        public int? BatteryLevel => (Status != null && Status.Optionals.ContainsKey("powerRemaining")) ? int.Parse(Status.Optionals["powerRemaining"]) : 0;
+        public int? BatteryLevel => (Status != null && Status.Optionals.ContainsKey("powerRemaining")) ? int.Parse(Status.Optionals["powerRemaining"]) : null;
 
         /// <summary>
         /// PiR status

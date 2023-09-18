@@ -13,16 +13,21 @@ namespace ezviz_mqtt.util
             this.pollingOptions = pollingOptions.Value;
         }
 
-        public async Task Log(Guid? id, string message)
+        public async Task Log(Guid? id, string? serialNumber, string message)
         {
             if (string.IsNullOrEmpty(pollingOptions.RequestLogLocation))
             {
                 return;
             }
-            var fileName = Path.Join(pollingOptions.RequestLogLocation, $"{id.ToString()}.txt");
-            var file = File.CreateText(fileName);
-            await file.WriteLineAsync(message);
-            file.Close();                       
+
+            if (pollingOptions.LogResponsesForDevice == "*" || pollingOptions.LogResponsesForDevice == "" || pollingOptions.LogResponsesForDevice == serialNumber)
+            {
+                var fileName = Path.Join(pollingOptions.RequestLogLocation, $"{serialNumber ?? id.ToString()}_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+                Directory.CreateDirectory(pollingOptions.RequestLogLocation);
+                var file = File.CreateText(fileName);
+                await file.WriteLineAsync(message);
+                file.Close();
+            }
         }
     }
 }
