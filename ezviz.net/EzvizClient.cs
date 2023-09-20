@@ -190,6 +190,20 @@ public class EzvizClient : IEzvizClient
 
     }
 
+    private async Task Log(string? serialNumber, string name, object response)
+    {
+        var options = new JsonSerializerOptions()
+        {
+            WriteIndented = true
+        };
+
+#pragma warning disable IL2026
+        var log = $"[[{name}=>\n\n{JsonSerializer.Serialize(response, options)}]]";
+#pragma warning restore IL2026
+        await requestLogger.Log(name, serialNumber ?? "GLOBAL", log);
+
+    }
+
     public async Task SetDefenceMode(DefenceMode mode)
     {
         var payload = new Dictionary<string, object>() {
@@ -203,6 +217,7 @@ public class EzvizClient : IEzvizClient
     public async Task<DefenceMode> GetDefenceMode()
     {
         var response = await api.GetDefenceMode();
+        await Log(null, "Get Defence Mode", response);
         response.Meta.ThrowIfNotOk("Could not get Defence Mode");
         return EnumX.ToObject<DefenceMode>(int.Parse(response.Mode));
     }
@@ -261,7 +276,8 @@ public class EzvizClient : IEzvizClient
     {
         //var response = await api.GetServiceUrls(await GetSessionId());
         var response = await api.GetServiceUrls();
-        response.Meta.ThrowIfNotOk("Could not get API service information");
+        await Log(null, "Get System Config", response);
+        response.Meta.ThrowIfNotOk("Could not get API service information");       
         return response.SystemConfigInfo;
     }
 
@@ -277,6 +293,7 @@ public class EzvizClient : IEzvizClient
         {
             return null;
         }
+        await Log(serialNumber, "Sensitivity", response);
         return response.AlgorithmConfig.AlgorithmList;
     }
 
@@ -322,6 +339,7 @@ public class EzvizClient : IEzvizClient
             { "stype", -1 }
         };
         var response = await api.GetAlarmInformation(query);
+        await Log(serialNumber, "Alarms", response);
         response.Meta.ThrowIfNotOk("Querying alarms");
 
         if (includeImage)
@@ -376,6 +394,7 @@ public class EzvizClient : IEzvizClient
         }
 
         var response = await api.GetDeviceConfig(serialNumber, 1, "Alarm_DetectHumanCar");
+        await Log(serialNumber, "AlarmDetectionMethod", response);
         response.Meta.ThrowIfNotOk($"Getting alarm detection method");
 #pragma warning disable IL2026
         var parsedResponse = JsonSerializer.Deserialize<IDictionary<string, JsonElement>>(response.ValueInfo);
@@ -395,6 +414,7 @@ public class EzvizClient : IEzvizClient
         }
 
         var response = await api.GetDeviceConfig(serialNumber, 1, "display_mode");
+        await Log(serialNumber, "ImageDisplayMode", response);
         response.Meta.ThrowIfNotOk($"Getting image display method");
 
 #pragma warning disable IL2026

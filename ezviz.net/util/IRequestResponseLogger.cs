@@ -8,6 +8,7 @@ namespace ezviz.net.util
 {
     public interface IRequestResponseLogger
     {
-        Task Log(Guid? id, string? serialNumber, string content);
+        Task Log(Guid id, string? serialNumber, string content);
+        Task Log(string name, string? serialNumber, string content);
     }
 }

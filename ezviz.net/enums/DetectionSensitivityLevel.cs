@@ -16,6 +16,6 @@ namespace ezviz.net.domain
         Low = 3,
         High = 4,
         VeryHigh = 5,
-        Highest
+        Highest = 6
     }
 }
