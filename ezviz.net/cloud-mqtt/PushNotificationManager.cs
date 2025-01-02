@@ -43,7 +43,7 @@ namespace ezviz_mqtt.cloud_mqtt
 
         public async Task OpenPushNotificationStream()
         {
-            if (mqttClient == null || mqttClient.IsConnected)
+            if (mqttClient != null && mqttClient.IsConnected)
             {
                 return;
             }

@@ -45,6 +45,8 @@ internal class MqttWorker : IMqttWorker
     private DateTime LastFullPoll = default;
     private DateTime LastAlarmPoll = default;
     private DateTime LastAutoDiscoverMessage = default;
+    private DateTime LastPushHealthCheck = default;
+    private const int DefaultPushHealthCheck = 30;
 
     private IEnumerable<Camera> cameras = new List<Camera>();
 
@@ -111,14 +113,14 @@ internal class MqttWorker : IMqttWorker
         try
         {
             ezvizClient.LogAllResponses = pollingConfig.LogAllResponses;
-
-            mqttHandler.ConnectToMqtt(null, _deviceCommandTopic, _globalCommandTopic, _deviceStatusTopic);
             if (string.IsNullOrEmpty(ezvizConfig?.Username) || string.IsNullOrEmpty(ezvizConfig?.Password))
             {
                 throw new EzvizNetException("Please provide an ezviz username and password");
             }
             logger.LogInformation("Logging in to ezviz API as {0}", ezvizConfig.Username);
             var user = await ezvizClient.Login(ezvizConfig.Username, ezvizConfig.Password);
+
+            mqttHandler.ConnectToMqtt(null, _deviceCommandTopic, _globalCommandTopic, _deviceStatusTopic);
 
             if (ezvizConfig.EnablePushNotifications)
             {
@@ -180,7 +182,7 @@ internal class MqttWorker : IMqttWorker
     public async Task PublishAsync(CancellationToken stoppingToken, bool force = false)
     {
         serviceState.MqttConnected = mqttHandler.IsConnected;
-        await mqttHandler.EnsureConnected((reconnected)=>
+        await mqttHandler.EnsureConnected((reconnected) =>
         {
             if (reconnected)
             {
@@ -191,22 +193,24 @@ internal class MqttWorker : IMqttWorker
         var timeSinceLastFullPoll = DateTime.Now - LastFullPoll;
         var timeSinceLastAutoDiscover = DateTime.Now - LastAutoDiscoverMessage;
         var timeSinceLastAlarmPoll = DateTime.Now - LastAlarmPoll;
+        var timeSinceLastPushHealthCheck = DateTime.Now - LastPushHealthCheck;
+        var healthCheckInterval = pollingConfig.PushHealthCheck.HasValue ? pollingConfig.PushHealthCheck.Value : DefaultPushHealthCheck;
         try
         {
-            if (timeSinceLastAutoDiscover.TotalHours >= 1)
+            if (ezvizConfig.EnablePushNotifications && (timeSinceLastPushHealthCheck.TotalSeconds >= healthCheckInterval))
             {
-                await PollCameras(stoppingToken, true);
+                logger.LogInformation($"Ensuring that push notification channel is still open");
+                await ezvizClient.CheckPushConnection();
+                LastPushHealthCheck = DateTime.Now;
             }
-            else
+            if (force || (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras))
             {
-                if (force || (timeSinceLastFullPoll.TotalMinutes >= pollingConfig.Cameras))
-                {
-                    await PollCameras(stoppingToken, timeSinceLastAutoDiscover.TotalHours >= 1);
-                    LastFullPoll = DateTime.Now;
-                    LastAutoDiscoverMessage = DateTime.Now;
-                    serviceState.LastStatusCheck = LastFullPoll;
-                }
+                await PollCameras(stoppingToken, timeSinceLastAutoDiscover.TotalHours >= 1);
+                LastFullPoll = DateTime.Now;
+                LastAutoDiscoverMessage = DateTime.Now;
+                serviceState.LastStatusCheck = LastFullPoll;
             }
+
             if (force || (timeSinceLastAlarmPoll.TotalMinutes >= pollingConfig.Alarms))
             {
                 await PollAlarms(stoppingToken);
@@ -226,11 +230,6 @@ internal class MqttWorker : IMqttWorker
 
     private async Task PollCameras(CancellationToken stoppingToken, bool sendAutoDisover)
     {
-        if (ezvizConfig.EnablePushNotifications)
-        {
-            logger.LogInformation($"Ensuring that push notification channel is still open");
-            await ezvizClient.CheckPushConnection();
-        }
         logger.LogInformation("Checking Defence Mode");
         var defenceMode = await ezvizClient.GetDefenceMode();
         mqttHandler.SendMqtt(_globalStateTopic.Replace("{command}", MQTT_COMMAND_DEFENCEMODE), defenceMode.ToString(), false, false);

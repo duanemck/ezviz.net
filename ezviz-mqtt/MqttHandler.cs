@@ -90,7 +90,7 @@ namespace ezviz_mqtt
                 }
                 catch (Exception e)
                 {
-                    logger.LogError("Could not connect to MQTT broker", e);
+                    logger.LogError(e, "Could not connect to MQTT broker");
                     await Task.Delay(mqttConfig.ConnectRetryDelaySeconds * 1000);
                 }
                 finally
